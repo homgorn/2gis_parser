@@ -7,6 +7,7 @@ from urllib.parse import unquote
 
 import pandas as pd
 from selenium import webdriver
+from selenium.common import InvalidSessionIdException
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 
@@ -68,39 +69,42 @@ async def find_and_get_elements(city, search_query, driver, main_block):
 
 
 async def run_parser(city, search_query):
-    url = f"https://2gis.ru/{city}/search/{search_query}"
-    options = Options()
-    options.add_argument("-headless")
-    options.add_argument("--disable-dev-shm-usage")
-    options.add_argument("--no-sandbox")
-    driver = webdriver.Chrome(options=options)
-    # driver.maximize_window()
-    driver.get(url)
-    element_click(driver, xpathes.main_banner)
-    element_click(driver, xpathes.cookie_banner)
-    count_all_items = int(get_element_text(driver, xpathes.items_count))
-    pages = round(count_all_items / 12 + 0.5)
-    items_counts = 0
-    for _ in range(pages):
-        main_block = driver.find_element(By.XPATH, xpathes.main_block)
-        count_items = len(main_block.find_elements(By.XPATH, "div"))
-        for item in range(1, count_items + 1):
-            if main_block.find_element(By.XPATH, f"div[{item}]").get_attribute("class"):
-                continue
-            item_clicked = element_click(main_block, f"div[{item}]/div/div[2]")
-            # sleep(1)
-            if not item_clicked:
-                driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-                element_click(main_block, f"div[{item}]/div/div[2]")
-            print(f"Уже спарсили {items_counts} магазинов")
-            items_counts += 1
-            await find_and_get_elements(city, search_query, driver, main_block)
+    try:
+        url = f"https://2gis.ru/{city}/search/{search_query}"
+        options = Options()
+        options.add_argument("-headless")
+        options.add_argument("--disable-dev-shm-usage")
+        options.add_argument("--no-sandbox")
+        driver = webdriver.Chrome(options=options)
+        # driver.maximize_window()
+        driver.get(url)
+        element_click(driver, xpathes.main_banner)
+        element_click(driver, xpathes.cookie_banner)
+        count_all_items = int(get_element_text(driver, xpathes.items_count))
+        pages = round(count_all_items / 12 + 0.5)
+        items_counts = 0
+        for _ in range(pages):
+            main_block = driver.find_element(By.XPATH, xpathes.main_block)
+            count_items = len(main_block.find_elements(By.XPATH, "div"))
+            for item in range(1, count_items + 1):
+                if main_block.find_element(By.XPATH, f"div[{item}]").get_attribute("class"):
+                    continue
+                item_clicked = element_click(main_block, f"div[{item}]/div/div[2]")
+                # sleep(1)
+                if not item_clicked:
+                    driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+                    element_click(main_block, f"div[{item}]/div/div[2]")
+                print(f"Уже спарсили {items_counts} магазинов")
+                items_counts += 1
+                await find_and_get_elements(city, search_query, driver, main_block)
 
-        driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-        element_click(driver, xpathes.next_page_btn)
-        sleep(0.5)
-    driver.quit()
-    await get_excel(city, search_query)
+            driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+            element_click(driver, xpathes.next_page_btn)
+            sleep(0.5)
+        driver.quit()
+        await get_excel(city, search_query)
+    except InvalidSessionIdException:
+        await get_excel(city, search_query)
 
 
 async def main():
