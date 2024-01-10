@@ -88,7 +88,7 @@ async def run_parser(city, search_query):
             if main_block.find_element(By.XPATH, f"div[{item}]").get_attribute("class"):
                 continue
             item_clicked = element_click(main_block, f"div[{item}]/div/div[2]")
-            sleep(1)
+            # sleep(1)
             if not item_clicked:
                 driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
                 element_click(main_block, f"div[{item}]/div/div[2]")
