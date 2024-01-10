@@ -27,9 +27,9 @@ def main():
     city = "samara"
     search_query = "Вкусно и точка"
     url = f"https://2gis.ru/{city}/search/{search_query}"
-    options = Options()
-    options.add_argument("-headless")
-    driver = webdriver.Chrome(options=options)
+    # options = Options()
+    # options.add_argument("-headless")
+    driver = webdriver.Chrome()
     driver.maximize_window()
     driver.get(url)
     element_click(driver, xpathes.main_banner)

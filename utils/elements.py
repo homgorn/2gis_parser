@@ -16,7 +16,7 @@ def get_element_text(driver: WebDriver, path: str) -> str:
 
 def get_element_href(driver, path):
     try:
-        return driver.find_element(By.XPATH, path).get_dom_atrtribute("href")
+        return driver.find_element(By.CSS_SELECTOR, path).get_dom_attribute("href")
     except NoSuchElementException:
         return ""
 
