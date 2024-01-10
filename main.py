@@ -23,6 +23,8 @@ from save_on_excel import get_excel
 
 async def find_and_get_elements(city, search_query, driver, main_block):
     title = get_element_text(driver, xpathes.title)
+    print(title)
+    print(get_element_text(driver, xpathes.items_count))
     phone_btn_clicked = element_click(driver, xpathes.phone_btn)
     phone = get_elements_text(driver, xpathes.phone) if phone_btn_clicked else ""
     socials_selectors = [xpathes.social[f"social{i}"] for i in range(1, 7)]
@@ -69,8 +71,11 @@ async def run_parser(city, search_query):
     url = f"https://2gis.ru/{city}/search/{search_query}"
     options = Options()
     options.add_argument("-headless")
-    driver = webdriver.Chrome(options=options)
-    driver.maximize_window()
+    chrome_binary_path = "/usr/bin/google"
+    chromedriver_path = "/usr/local/bin/chromedriver"
+    options.binary_location = chrome_binary_path
+    driver = webdriver.Chrome(executable_path=chromedriver_path, options=options)
+    # driver.maximize_window()
     driver.get(url)
     element_click(driver, xpathes.main_banner)
     element_click(driver, xpathes.cookie_banner)
