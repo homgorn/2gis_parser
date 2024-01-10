@@ -71,8 +71,6 @@ async def run_parser(city, search_query):
     url = f"https://2gis.ru/{city}/search/{search_query}"
     options = Options()
     options.add_argument("-headless")
-    chrome_binary_path = "/usr/bin/google"
-    options.binary_location = chrome_binary_path
     driver = webdriver.Chrome(options=options)
     # driver.maximize_window()
     driver.get(url)
