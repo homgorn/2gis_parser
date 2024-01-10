@@ -1,21 +1,19 @@
+import asyncio
+import datetime
 from time import sleep
 from urllib.parse import unquote
+
 import pandas as pd
 from selenium import webdriver
-from selenium.common.exceptions import (
-    NoSuchElementException,
-    StaleElementReferenceException,
-)
-from selenium.webdriver.common.by import By
-from selenium.webdriver.remote.webdriver import WebDriver
-from utils import xpathes
-import datetime
 from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.common.by import By
+
+from utils import xpathes
 from utils.elements import (
     element_click,
+    get_element_href,
     get_element_text,
     move_to_element,
-    get_element_href,
 )
 
 TABLE_COLUMNS = ["Название", "Телефон", "Адрес", "Ссылка", "Соц.сети"]
@@ -23,12 +21,10 @@ TABLE = {column: [] for column in TABLE_COLUMNS}
 CURRENT_DAY = datetime.datetime.now().strftime("%Y-%m-%d_%H.%M")
 
 
-def main():
-    city = "samara"
-    search_query = "Вкусно и точка"
+async def run_parser(city, search_query):
     url = f"https://2gis.ru/{city}/search/{search_query}"
     options = Options()
-    options.add_argument("-headless")
+    # options.add_argument("-headless")
     driver = webdriver.Chrome(options=options)
     driver.maximize_window()
     driver.get(url)
@@ -50,12 +46,12 @@ def main():
             title = get_element_text(driver, xpathes.title)
             phone_btn_clicked = element_click(driver, xpathes.phone_btn)
             phone = get_element_text(driver, xpathes.phone) if phone_btn_clicked else ""
-            vk = get_element_href(driver, xpathes.vk)
-            telegram = get_element_href(driver, xpathes.telegram)
-            odnoklassniki = get_element_href(driver, xpathes.odnoklassniki)
-            print("vk = ", vk)
-            print("telegram = ", telegram)
-            social = [vk, telegram, odnoklassniki]
+            # vk = get_element_href(driver, xpathes.vk)
+            # telegram = get_element_href(driver, xpathes.telegram)
+            # odnoklassniki = get_element_href(driver, xpathes.odnoklassniki)
+            # print("vk = ", vk)
+            # print("telegram = ", telegram)
+            # social = [vk, telegram, odnoklassniki]
             move_to_element(driver, main_block)
             link = unquote(driver.current_url)
             address = get_element_text(driver, xpathes.address)
@@ -63,13 +59,18 @@ def main():
             TABLE["Телефон"].append(phone)
             TABLE["Адрес"].append(address)
             TABLE["Ссылка"].append(link)
-            TABLE["Соц.сети"].append(social)
+            TABLE["Соц.сети"].append("")
         driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
         element_click(driver, xpathes.next_page_btn)
         sleep(0.5)
     driver.quit()
-    pd.DataFrame(TABLE).to_excel(f"./files/{city}-{search_query}-{CURRENT_DAY}.xlsx")
+
+
+async def main():
+    city = "самара"
+    search_query = "Мороженное"
+    await run_parser(city, search_query)
 
 
 if __name__ == "__main__":
-    main()
+    asyncio.run(main())

@@ -11,6 +11,9 @@ from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.types import FSInputFile, Message
 from dotenv import load_dotenv
+from mtranslate import translate
+
+from main import run_parser
 
 load_dotenv()
 TOKEN = os.getenv("TOKEN")
@@ -45,13 +48,12 @@ async def process_query(message: Message, state: FSMContext) -> None:
 
 
 async def show_summary(message: Message, data: Dict[str, Any]) -> None:
-    city = data["city"]
     query = data["query"]
-    # await get_links(city, query)
-    # await get_info(query)
-    # await get_excel(city, query)
+    translated_city = translate(data["city"], "en", "ru").lower()
+    await run_parser(translated_city, query)
     await message.answer_document(
-        FSInputFile(f"{city}_{query}.xlsx"), caption="Запрос выполнен успешно"
+        FSInputFile(f"{translated_city}_{query}.xlsx"),
+        caption="Запрос выполнен успешно",
     )
 
 
