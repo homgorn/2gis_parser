@@ -52,9 +52,11 @@ async def show_summary(message: Message, data: Dict[str, Any]) -> None:
     translated_city = translate(data["city"], "en", "ru").lower()
     await run_parser(translated_city, query)
     await message.answer_document(
-        FSInputFile(f"{translated_city}_{query}.xlsx"),
+        FSInputFile(f"files/{translated_city}_{query}.xlsx"),
         caption="Запрос выполнен успешно",
     )
+    # os.remove(f"files/{translated_city}_{query}.xlsx")
+    # os.remove(f"result_output/{translated_city}_{query}.csv")
 
 
 async def main():

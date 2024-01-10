@@ -1,5 +1,7 @@
 import asyncio
 import datetime
+import os
+import re
 from time import sleep
 from urllib.parse import unquote
 
@@ -14,17 +16,59 @@ from utils.elements import (
     get_element_href,
     get_element_text,
     move_to_element,
+    get_elements_text,
 )
+from save_on_excel import get_excel
 
-TABLE_COLUMNS = ["Название", "Телефон", "Адрес", "Ссылка", "Соц.сети"]
-TABLE = {column: [] for column in TABLE_COLUMNS}
-CURRENT_DAY = datetime.datetime.now().strftime("%Y-%m-%d_%H.%M")
+
+async def find_and_get_elements(city, search_query, driver, main_block):
+    title = get_element_text(driver, xpathes.title)
+    phone_btn_clicked = element_click(driver, xpathes.phone_btn)
+    phone = get_elements_text(driver, xpathes.phone) if phone_btn_clicked else ""
+    socials_selectors = [xpathes.social[f"social{i}"] for i in range(1, 7)]
+
+    socials = []
+    for xpath in socials_selectors:
+        element = get_element_href(driver, xpath)
+        socials.append(element) if element != "" else None
+
+    email = get_element_href(driver, xpathes.email)
+    real_email = re.search(r"mailto:(.+)", email).group(1) if email != "" else ""
+    rating = get_element_text(driver, xpathes.rating)
+    # link = unquote(driver.current_url)
+    move_to_element(driver, main_block)
+    df = pd.DataFrame(
+        columns=[
+            "title",
+            "phone",
+            "real_email",
+            "socials",
+            "rating",
+        ]
+    )
+
+    row_data = [
+        title,
+        phone,
+        real_email,
+        socials,
+        rating,
+    ]
+
+    df.loc[len(df)] = row_data
+
+    df.to_csv(
+        f"result_output/{city}_{search_query}.csv",
+        mode="a",
+        header=not os.path.isfile(f"result_output/{city}_{search_query}.csv"),
+        index=False,
+    )
 
 
 async def run_parser(city, search_query):
     url = f"https://2gis.ru/{city}/search/{search_query}"
     options = Options()
-    # options.add_argument("-headless")
+    options.add_argument("-headless")
     driver = webdriver.Chrome(options=options)
     driver.maximize_window()
     driver.get(url)
@@ -40,35 +84,23 @@ async def run_parser(city, search_query):
             if main_block.find_element(By.XPATH, f"div[{item}]").get_attribute("class"):
                 continue
             item_clicked = element_click(main_block, f"div[{item}]/div/div[2]")
+            sleep(1.5)
             if not item_clicked:
                 driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
                 element_click(main_block, f"div[{item}]/div/div[2]")
-            title = get_element_text(driver, xpathes.title)
-            phone_btn_clicked = element_click(driver, xpathes.phone_btn)
-            phone = get_element_text(driver, xpathes.phone) if phone_btn_clicked else ""
-            # vk = get_element_href(driver, xpathes.vk)
-            # telegram = get_element_href(driver, xpathes.telegram)
-            # odnoklassniki = get_element_href(driver, xpathes.odnoklassniki)
-            # print("vk = ", vk)
-            # print("telegram = ", telegram)
-            # social = [vk, telegram, odnoklassniki]
-            move_to_element(driver, main_block)
-            link = unquote(driver.current_url)
-            address = get_element_text(driver, xpathes.address)
-            TABLE["Название"].append(title)
-            TABLE["Телефон"].append(phone)
-            TABLE["Адрес"].append(address)
-            TABLE["Ссылка"].append(link)
-            TABLE["Соц.сети"].append("")
+
+            await find_and_get_elements(city, search_query, driver, main_block)
+
         driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
         element_click(driver, xpathes.next_page_btn)
         sleep(0.5)
     driver.quit()
+    await get_excel(city, search_query)
 
 
 async def main():
-    city = "самара"
-    search_query = "Мороженное"
+    city = "samara"
+    search_query = "Вкусно и точка"
     await run_parser(city, search_query)
 
 

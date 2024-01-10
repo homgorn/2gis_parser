@@ -1,14 +1,50 @@
-from datetime import datetime
-
+import asyncio
+from ast import literal_eval
 import pandas as pd
+from openpyxl.styles import Alignment
 
 
-async def save_on_excel(table, city, search_query):
-    day_now = datetime.datetime.now().strftime("%Y-%m-%d_%H.%M")
-    with pd.ExcelWriter(
-        f"./files/{city}-{search_query}-{day_now}.xlsx", engine="openpyxl"
-    ) as writer:
-        table.to_excel(writer, index=False, sheet_name="Sheet1", engine="openpyxl")
+async def get_excel(city, search_query):
+    df = pd.read_csv(
+        f"result_output/{city}_{search_query}.csv", converters={"outputs": literal_eval}
+    )
+    df = df.dropna(subset=["title"])
+    result_df = pd.DataFrame(columns=["title", "phone", "social", "rating", "count"])
+    for index, row in df.iterrows():
+        title = row["title"]
+        phones = (
+            "".join(map(str, row["phone"])).replace("'", "").replace("{", "").replace("}", "")
+            if not pd.isna(row["phone"]) and row["phone"] != ""
+            else None
+        )
+        social = (
+            "".join(map(str, row["socials"])).replace("'", "").replace("[", "").replace("]", "")
+            if not pd.isna(row["socials"]) and row["socials"] != ""
+            else None
+        )
+
+        rating = str(row["rating"])
+        count = df[df["title"] == title].shape[0]
+
+        result_df = pd.concat(
+            [
+                result_df,
+                pd.DataFrame(
+                    {
+                        "title": [title],
+                        "phone": [phones],
+                        "social": [social],
+                        "rating": [rating],
+                        "count": [count],
+                    }
+                ),
+            ]
+        )
+
+    result_df = result_df.drop_duplicates(subset="title")
+
+    with pd.ExcelWriter(f"files/{city}_{search_query}.xlsx", engine="openpyxl") as writer:
+        result_df.to_excel(writer, index=False, sheet_name="Sheet1", engine="openpyxl")
         worksheet = writer.sheets["Sheet1"]
         for column in worksheet.columns:
             max_length = 0
@@ -21,3 +57,10 @@ async def save_on_excel(table, city, search_query):
                     pass
             adjusted_width = max_length + 2
             worksheet.column_dimensions[column[0].column_letter].width = adjusted_width
+            for cell in column:
+                cell.alignment = Alignment(wrap_text=True)
+    return True
+
+
+# #
+# asyncio.run(get_excel("samara", "Автосалон"))

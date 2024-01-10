@@ -18,6 +18,8 @@ python-dotenv = "^1.0.0"
 requests = "^2.31.0"
 mtranslate = "^1.8"
 
+[tool.black]
+line-length = 100
 
 [build-system]
 requires = ["poetry-core"]
