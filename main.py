@@ -72,9 +72,8 @@ async def run_parser(city, search_query):
     options = Options()
     options.add_argument("-headless")
     chrome_binary_path = "/usr/bin/google"
-    chromedriver_path = "/usr/local/bin/chromedriver"
     options.binary_location = chrome_binary_path
-    driver = webdriver.Chrome(executable_path=chromedriver_path, options=options)
+    driver = webdriver.Chrome(options=options)
     # driver.maximize_window()
     driver.get(url)
     element_click(driver, xpathes.main_banner)
