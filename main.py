@@ -8,36 +8,19 @@ from selenium.common.exceptions import (
 )
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webdriver import WebDriver
-from selenium.webdriver.remote.webelement import WebElement
-import xpathes
+from utils import xpathes
 import datetime
 from selenium.webdriver.chrome.options import Options
+from utils.elements import (
+    element_click,
+    get_element_text,
+    move_to_element,
+    get_element_href,
+)
 
 TABLE_COLUMNS = ["Название", "Телефон", "Адрес", "Ссылка", "Соц.сети"]
 TABLE = {column: [] for column in TABLE_COLUMNS}
 CURRENT_DAY = datetime.datetime.now().strftime("%Y-%m-%d_%H.%M")
-
-
-def get_element_text(driver: WebDriver, path: str) -> str:
-    try:
-        return driver.find_element(By.XPATH, path).text
-    except NoSuchElementException:
-        return ""
-
-
-def move_to_element(driver: WebDriver, element) -> None:
-    try:
-        webdriver.ActionChains(driver).move_to_element(element).perform()
-    except StaleElementReferenceException:
-        pass
-
-
-def element_click(driver, path: str) -> bool:
-    try:
-        driver.find_element(By.XPATH, path).click()
-        return True
-    except:
-        return False
 
 
 def main():
@@ -67,9 +50,11 @@ def main():
             title = get_element_text(driver, xpathes.title)
             phone_btn_clicked = element_click(driver, xpathes.phone_btn)
             phone = get_element_text(driver, xpathes.phone) if phone_btn_clicked else ""
-            vk = get_element_text(driver, xpathes.vk)
-            telegram = get_element_text(driver, xpathes.telegram)
-            odnoklassniki = get_element_text(driver, xpathes.odnoklassniki)
+            vk = get_element_href(driver, xpathes.vk)
+            telegram = get_element_href(driver, xpathes.telegram)
+            odnoklassniki = get_element_href(driver, xpathes.odnoklassniki)
+            print("vk = ", vk)
+            print("telegram = ", telegram)
             social = [vk, telegram, odnoklassniki]
             move_to_element(driver, main_block)
             link = unquote(driver.current_url)
