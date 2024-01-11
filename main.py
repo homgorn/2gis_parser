@@ -8,7 +8,7 @@ from selenium.common import InvalidSessionIdException, NoSuchElementException
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 
-from utils.save_on_excel import get_excel
+from save_on_excel import get_excel
 from utils import xpathes
 from utils.decod_link import decode_fucking_social
 from utils.elements import (
@@ -45,6 +45,7 @@ def process_social(xpath, driver):
 def find_and_get_elements(driver, main_block, data_in_memory):
     title = get_element_text(driver, xpathes.title)
     print(title)
+    driver.implicitly_wait(0.2)
     phone_btn_clicked = element_click(driver, xpathes.phone_btn)
     driver.implicitly_wait(0.2)
     phone = get_elements_text(driver, xpathes.phone) if phone_btn_clicked else ""
@@ -61,8 +62,8 @@ def find_and_get_elements(driver, main_block, data_in_memory):
 
     row_data = [
         title,
-        phone,
         link,
+        phone,
         real_email,
         socials,
         rating,

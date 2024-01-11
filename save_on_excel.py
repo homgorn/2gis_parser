@@ -1,3 +1,4 @@
+import asyncio
 from ast import literal_eval
 
 import pandas as pd
@@ -9,7 +10,7 @@ async def get_excel(city, search_query):
         f"result_output/{city}_{search_query}.csv", converters={"outputs": literal_eval}
     )
     df = df.dropna(subset=["title"])
-    result_df = pd.DataFrame(columns=["title", "link", "phone", "social", "rating", "count"])
+    result_df = pd.DataFrame(columns=["title", "phone", "link", "social", "rating", "count"])
 
     for index, row in df.iterrows():
         title = row["title"]
@@ -19,23 +20,18 @@ async def get_excel(city, search_query):
             if not pd.isna(row["phone"]) and row["phone"] != ""
             else None
         )
-        socials = (
-            "\n".join(map(str, row["socials"])).replace("'", "").replace("[", "").replace("]", "")
-            if not pd.isna(row["socials"]) and row["socials"] != ""
-            else None
-        )
+        socials = "\n".join(literal_eval(row["socials"]))
 
         rating = str(row["rating"])
         count = df[df["title"] == title].shape[0]
-
         result_df = pd.concat(
             [
                 result_df,
                 pd.DataFrame(
                     {
                         "title": [title],
-                        "link": [link],
                         "phone": [phones],
+                        "link": [link],
                         "social": [socials],
                         "rating": [rating],
                         "count": [count],
@@ -60,9 +56,9 @@ async def get_excel(city, search_query):
                 except:
                     pass
             adjusted_width = max_length + 2
-            worksheet.column_dimensions[column[0].column_letter].width = adjusted_width
             for cell in column:
                 cell.alignment = Alignment(wrap_text=True)
+            worksheet.column_dimensions[column[0].column_letter].width = adjusted_width
 
 
-# asyncio.run(get_excel("samara", "Вкусно и точка"))
+asyncio.run(get_excel("samara", "Магазин телефонов"))

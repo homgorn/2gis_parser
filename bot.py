@@ -48,9 +48,9 @@ async def process_query(message: Message, state: FSMContext) -> None:
 
 
 async def show_summary(message: Message, data: Dict[str, Any]) -> None:
+    query = data["query"]
+    translated_city = translate(data["city"], "en", "ru").lower()
     try:
-        query = data["query"]
-        translated_city = translate(data["city"], "en", "ru").lower()
         await run_parser(translated_city, query)
         await message.answer_document(
             FSInputFile(f"files/{translated_city}_{query}.xlsx"),
@@ -59,7 +59,9 @@ async def show_summary(message: Message, data: Dict[str, Any]) -> None:
         os.remove(f"files/{translated_city}_{query}.xlsx")
         os.remove(f"result_output/{translated_city}_{query}.csv")
     except Exception as e:
-        await message.answer(f"Произошла ошибка: {e}")
+        await message.answer_document(
+            FSInputFile(f"files/{translated_city}_{query}.xlsx"), caption=f"Произошла ошибка: {e}"
+        )
 
 
 async def main():
