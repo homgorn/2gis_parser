@@ -6,6 +6,7 @@ from typing import Any, Dict
 
 from aiogram import Bot, Dispatcher, Router
 from aiogram.enums import ParseMode
+from aiogram.exceptions import TelegramBadRequest
 from aiogram.filters import CommandStart
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
@@ -52,14 +53,14 @@ async def show_summary(message: Message, data: Dict[str, Any]) -> None:
     translated_city = translate(data["city"], "en", "ru").lower()
     user_id = message.from_user.id
     try:
-        await run_parser(translated_city, query)
+        await run_parser(translated_city, query, user_id)
         await message.answer_document(
             FSInputFile(f"files/{translated_city}_{query}.xlsx"),
             caption="Запрос выполнен успешно",
         )
         os.remove(f"files/{translated_city}_{query}.xlsx")
         os.remove(f"result_output/{translated_city}_{query}.csv")
-    except Exception:
+    except (Exception, TelegramBadRequest):
         await bot.send_document(user_id, f"files/{translated_city}_{query}.xlsx")
         os.remove(f"files/{translated_city}_{query}.xlsx")
         os.remove(f"result_output/{translated_city}_{query}.csv")
