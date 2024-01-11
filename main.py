@@ -4,6 +4,7 @@ import re
 
 import pandas as pd
 from aiogram import Bot
+from aiogram.exceptions import TelegramBadRequest
 from selenium import webdriver
 from selenium.common import InvalidSessionIdException, NoSuchElementException
 from selenium.webdriver.chrome.options import Options
@@ -117,7 +118,7 @@ async def run_parser(city, search_query, user_id):
         print(e)
         save_data_to_csv(data_in_memory, city, search_query)
         await get_excel(city, search_query)
-    except (KeyboardInterrupt, Exception):
+    except (KeyboardInterrupt, Exception, TelegramBadRequest):
         save_data_to_csv(data_in_memory, city, search_query)
         await get_excel(city, search_query)
         await bot.send_document(user_id, f"files/{city}_{search_query}.xlsx")
