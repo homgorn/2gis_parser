@@ -1,2 +1,6 @@
 .env
 /files
+/result_output
+.DS_Store
+/__pycache__
+/.idea

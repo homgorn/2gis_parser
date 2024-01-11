@@ -1,24 +1,8 @@
 from selenium import webdriver
-from selenium.common.exceptions import (
-    NoSuchElementException,
-    StaleElementReferenceException,
-)
+from selenium.common.exceptions import (NoSuchElementException,
+                                        StaleElementReferenceException)
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webdriver import WebDriver
-
-
-async def async_get_element_href(driver, path):
-    try:
-        return driver.find_element(By.CSS_SELECTOR, path).get_dom_attribute("href")
-    except NoSuchElementException:
-        return ""
-
-
-async def async_get_element_label(driver, path):
-    try:
-        return driver.find_element(By.CSS_SELECTOR, path).get_attribute("aria-label")
-    except NoSuchElementException:
-        return ""
 
 
 def get_element_text(driver: WebDriver, path: str) -> str:

@@ -55,8 +55,8 @@ async def show_summary(message: Message, data: Dict[str, Any]) -> None:
         FSInputFile(f"files/{translated_city}_{query}.xlsx"),
         caption="Запрос выполнен успешно",
     )
-    # os.remove(f"files/{translated_city}_{query}.xlsx")
-    # os.remove(f"result_output/{translated_city}_{query}.csv")
+    os.remove(f"files/{translated_city}_{query}.xlsx")
+    os.remove(f"result_output/{translated_city}_{query}.csv")
 
 
 async def main():
