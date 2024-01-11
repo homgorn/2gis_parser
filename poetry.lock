@@ -1251,17 +1251,6 @@ files = [
 h11 = ">=0.9.0,<1"
 
 [[package]]
-name = "xlsxwriter"
-version = "3.1.9"
-description = "A Python module for creating Excel XLSX files."
-optional = false
-python-versions = ">=3.6"
-files = [
-    {file = "XlsxWriter-3.1.9-py3-none-any.whl", hash = "sha256:b61c1a0c786f82644936c0936ec96ee96cd3afb9440094232f7faef9b38689f0"},
-    {file = "XlsxWriter-3.1.9.tar.gz", hash = "sha256:de810bf328c6a4550f4ffd6b0b34972aeb7ffcf40f3d285a0413734f9b63a929"},
-]
-
-[[package]]
 name = "yarl"
 version = "1.9.4"
 description = "Yet another URL library"
@@ -1367,4 +1356,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "8a79b57a41bbe93055735c7b6eba217267c5e6615b17c370a9de362d3ae642c3"
+content-hash = "ccf4812cc26e8023db5880bc617eaead79a692ee2a4c474cc7eea983b8a4dacd"
