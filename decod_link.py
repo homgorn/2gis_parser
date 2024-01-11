@@ -3,6 +3,8 @@ from urllib.parse import unquote
 
 
 def decode_fucking_social(encoded_url):
+    if encoded_url == "":
+        return ""
     encoded_url = encoded_url.replace("\n", "").replace(" ", "")
     encoded_url = encoded_url.split("/")[-1]
 

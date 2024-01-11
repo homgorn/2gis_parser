@@ -1,3 +1,5 @@
+import asyncio
+
 import pandas as pd
 from ast import literal_eval
 from openpyxl.styles import Alignment
@@ -18,7 +20,7 @@ async def get_excel(city, search_query):
             else None
         )
         socials = (
-            "".join(map(str, row["socials"])).replace("'", "").replace("[", "").replace("]", "")
+            "\n".join(map(str, row["socials"])).replace("'", "").replace("[", "").replace("]", "")
             if not pd.isna(row["socials"]) and row["socials"] != ""
             else None
         )
@@ -62,4 +64,4 @@ async def get_excel(city, search_query):
                 cell.alignment = Alignment(wrap_text=True)
 
 
-# get_excel("samara", "Вкусно и точка")
+# asyncio.run(get_excel("samara", "Вкусно и точка"))
