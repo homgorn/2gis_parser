@@ -1,6 +1,5 @@
-import asyncio
-from ast import literal_eval
 import pandas as pd
+from ast import literal_eval
 from openpyxl.styles import Alignment
 
 
@@ -10,6 +9,7 @@ async def get_excel(city, search_query):
     )
     df = df.dropna(subset=["title"])
     result_df = pd.DataFrame(columns=["title", "phone", "social", "rating", "count"])
+
     for index, row in df.iterrows():
         title = row["title"]
         phones = (
@@ -17,7 +17,7 @@ async def get_excel(city, search_query):
             if not pd.isna(row["phone"]) and row["phone"] != ""
             else None
         )
-        social = (
+        socials = (
             "".join(map(str, row["socials"])).replace("'", "").replace("[", "").replace("]", "")
             if not pd.isna(row["socials"]) and row["socials"] != ""
             else None
@@ -33,7 +33,7 @@ async def get_excel(city, search_query):
                     {
                         "title": [title],
                         "phone": [phones],
-                        "social": [social],
+                        "social": [socials],
                         "rating": [rating],
                         "count": [count],
                     }
@@ -46,6 +46,7 @@ async def get_excel(city, search_query):
     with pd.ExcelWriter(f"files/{city}_{search_query}.xlsx", engine="openpyxl") as writer:
         result_df.to_excel(writer, index=False, sheet_name="Sheet1", engine="openpyxl")
         worksheet = writer.sheets["Sheet1"]
+
         for column in worksheet.columns:
             max_length = 0
             column = [cell for cell in column]
@@ -59,8 +60,6 @@ async def get_excel(city, search_query):
             worksheet.column_dimensions[column[0].column_letter].width = adjusted_width
             for cell in column:
                 cell.alignment = Alignment(wrap_text=True)
-    return True
 
 
-# #
-# asyncio.run(get_excel("samara", "Автосалон"))
+# get_excel("samara", "Вкусно и точка")

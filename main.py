@@ -7,10 +7,11 @@ from urllib.parse import unquote
 
 import pandas as pd
 from selenium import webdriver
-from selenium.common import InvalidSessionIdException
+from selenium.common import InvalidSessionIdException, NoSuchElementException
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 
+from decod_link import decode_fucking_social
 from utils import xpathes
 from utils.elements import (
     element_click,
@@ -20,28 +21,31 @@ from utils.elements import (
     get_elements_text,
     get_element_label,
 )
-from utils.short_link import get_short_link
+from utils.short_link import async_get_short_link
 from save_on_excel import get_excel
 
 
-async def find_and_get_elements(city, search_query, driver, main_block, data_in_memory):
-    title = await get_element_text(driver, xpathes.title)
+def process_social(xpath, driver):
+    link = get_element_href(driver, xpath)
+    decoded_link = decode_fucking_social(link)
+    label = get_element_label(driver, xpath)
+    label_and_link = f"{label}: {decoded_link}"
+    return label_and_link if link != "" and label != "" else ""
+
+
+def find_and_get_elements(driver, main_block, data_in_memory):
+    title = get_element_text(driver, xpathes.title)
     print(title)
-    print(await get_element_text(driver, xpathes.items_count))
     phone_btn_clicked = element_click(driver, xpathes.phone_btn)
-    phone = await get_elements_text(driver, xpathes.phone) if phone_btn_clicked else ""
+    phone = get_elements_text(driver, xpathes.phone) if phone_btn_clicked else ""
     socials_selectors = [xpathes.social[f"social{i}"] for i in range(1, 7)]
 
     socials = []
     for xpath in socials_selectors:
-        element = await get_element_href(driver, xpath)
-        label = await get_element_label(driver, xpath)
-        link = await get_short_link(element)
-        label_and_link = f"{label}: {link}"
-        socials.append(label_and_link) if link != "" and label != "" else None
-    email = await get_element_href(driver, xpathes.email)
+        socials.append(process_social(xpath, driver))
+    email = get_element_href(driver, xpathes.email)
     real_email = re.search(r"mailto:(.+)", email).group(1) if email != "" else ""
-    rating = await get_element_text(driver, xpathes.rating)
+    rating = get_element_text(driver, xpathes.rating)
     move_to_element(driver, main_block)
 
     row_data = [
@@ -66,7 +70,7 @@ async def run_parser(city, search_query):
         driver.get(url)
         element_click(driver, xpathes.main_banner)
         element_click(driver, xpathes.cookie_banner)
-        count_all_items = int(await get_element_text(driver, xpathes.items_count))
+        count_all_items = int(get_element_text(driver, xpathes.items_count))
         pages = round(count_all_items / 12 + 0.5)
         items_counts = 0
         data_in_memory = []
@@ -78,13 +82,12 @@ async def run_parser(city, search_query):
                 if main_block.find_element(By.XPATH, f"div[{item}]").get_attribute("class"):
                     continue
                 item_clicked = element_click(main_block, f"div[{item}]/div/div[2]")
-                await asyncio.sleep(0.5)
                 if not item_clicked:
                     driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
                     element_click(main_block, f"div[{item}]/div/div[2]")
                 print(f"Уже спарсили {items_counts} магазинов")
                 items_counts += 1
-                await find_and_get_elements(city, search_query, driver, main_block, data_in_memory)
+                find_and_get_elements(driver, main_block, data_in_memory)
 
             driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
             element_click(driver, xpathes.next_page_btn)
@@ -100,13 +103,22 @@ async def run_parser(city, search_query):
             index=False,
         )
         await get_excel(city, search_query)
-    except InvalidSessionIdException:
+    except (InvalidSessionIdException, NoSuchElementException):
+        df = pd.DataFrame(
+            data_in_memory, columns=["title", "phone", "real_email", "socials", "rating"]
+        )
+        df.to_csv(
+            f"result_output/{city}_{search_query}.csv",
+            mode="a",
+            header=not os.path.isfile(f"result_output/{city}_{search_query}.csv"),
+            index=False,
+        )
         await get_excel(city, search_query)
 
 
 async def main():
     city = "samara"
-    search_query = "Магазин техники"
+    search_query = "Вкусно и точка"
     await run_parser(city, search_query)
 
 

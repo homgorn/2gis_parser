@@ -17,6 +17,7 @@ aiogram = "^3.3.0"
 python-dotenv = "^1.0.0"
 requests = "^2.31.0"
 mtranslate = "^1.8"
+xlsxwriter = "^3.1.9"
 
 [tool.black]
 line-length = 100
