@@ -60,8 +60,11 @@ async def show_summary(message: Message, data: Dict[str, Any]) -> None:
         os.remove(f"result_output/{translated_city}_{query}.csv")
     except Exception as e:
         await message.answer_document(
-            FSInputFile(f"files/{translated_city}_{query}.xlsx"), caption=f"Произошла ошибка: {e}"
+            FSInputFile(f"files/{translated_city}_{query}.xlsx"),
+            caption=f"Произошла ошибка, но эти данные удалось спарсить",
         )
+        os.remove(f"files/{translated_city}_{query}.xlsx")
+        os.remove(f"result_output/{translated_city}_{query}.csv")
 
 
 async def main():
