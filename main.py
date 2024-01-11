@@ -23,7 +23,7 @@ from save_on_excel import get_excel
 
 
 def save_data_to_csv(data_in_memory, city, search_query):
-    df = pd.DataFrame(data_in_memory, columns=["title", "phone", "real_email", "socials", "rating"])
+    df = pd.DataFrame(data_in_memory, columns=["title", "phone", "link", "real_email", "socials", "rating"])
     df.to_csv(
         f"result_output/{city}_{search_query}.csv",
         mode="a",
@@ -33,7 +33,7 @@ def save_data_to_csv(data_in_memory, city, search_query):
 
 
 def process_social(xpath, driver):
-    sleep(0.2)
+    driver.implicitly_wait(0.2)
     link = get_element_href(driver, xpath)
     decoded_link = decode_fucking_social(link)
     label = get_element_label(driver, xpath)
@@ -46,6 +46,7 @@ def find_and_get_elements(driver, main_block, data_in_memory):
     print(title)
     phone_btn_clicked = element_click(driver, xpathes.phone_btn)
     phone = get_elements_text(driver, xpathes.phone) if phone_btn_clicked else ""
+    link = get_element_text(driver, xpathes.link)
     socials_selectors = [xpathes.social[f"social{i}"] for i in range(1, 5)]
 
     socials = []
@@ -59,6 +60,7 @@ def find_and_get_elements(driver, main_block, data_in_memory):
     row_data = [
         title,
         phone,
+        link,
         real_email,
         socials,
         rating,
@@ -102,7 +104,7 @@ async def run_parser(city, search_query):
 
         driver.quit()
         save_data_to_csv(data_in_memory, city, search_query)
-        await get_excel(city, search_query)
+        # await get_excel(city, search_query)
     except (InvalidSessionIdException, NoSuchElementException) as e:
         print(e)
         save_data_to_csv(data_in_memory, city, search_query)
@@ -114,7 +116,7 @@ async def run_parser(city, search_query):
 
 async def main():
     city = "samara"
-    search_query = "Вкусно и точка"
+    search_query = "restore"
     await run_parser(city, search_query)
 
 
