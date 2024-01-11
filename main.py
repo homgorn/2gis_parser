@@ -114,7 +114,7 @@ async def run_parser(city, search_query):
 
 async def main():
     city = "samara"
-    search_query = "Вкусно и точка"
+    search_query = "Магазин телефонов"
     await run_parser(city, search_query)
 
 
