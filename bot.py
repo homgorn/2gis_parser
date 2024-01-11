@@ -17,7 +17,7 @@ from main import run_parser
 
 load_dotenv()
 TOKEN = os.getenv("TOKEN")
-
+bot = Bot(token=TOKEN, parse_mode=ParseMode.HTML)
 form_router = Router()
 
 
@@ -50,6 +50,7 @@ async def process_query(message: Message, state: FSMContext) -> None:
 async def show_summary(message: Message, data: Dict[str, Any]) -> None:
     query = data["query"]
     translated_city = translate(data["city"], "en", "ru").lower()
+    user_id = message.from_user.id
     try:
         await run_parser(translated_city, query)
         await message.answer_document(
@@ -58,17 +59,13 @@ async def show_summary(message: Message, data: Dict[str, Any]) -> None:
         )
         os.remove(f"files/{translated_city}_{query}.xlsx")
         os.remove(f"result_output/{translated_city}_{query}.csv")
-    except Exception as e:
-        await message.answer_document(
-            FSInputFile(f"files/{translated_city}_{query}.xlsx"),
-            caption=f"Произошла ошибка, но эти данные удалось спарсить",
-        )
+    except Exception:
+        await bot.send_document(user_id, f"files/{translated_city}_{query}.xlsx")
         os.remove(f"files/{translated_city}_{query}.xlsx")
         os.remove(f"result_output/{translated_city}_{query}.csv")
 
 
 async def main():
-    bot = Bot(token=TOKEN, parse_mode=ParseMode.HTML)
     dp = Dispatcher()
     dp.include_router(form_router)
     await dp.start_polling(bot)
