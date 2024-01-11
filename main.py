@@ -21,7 +21,9 @@ from utils.elements import (
     get_elements_text,
     move_to_element,
 )
+from dotenv import load_dotenv
 
+load_dotenv()
 TOKEN = os.getenv("TOKEN")
 bot = Bot(token=TOKEN)
 
