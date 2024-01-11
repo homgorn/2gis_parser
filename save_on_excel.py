@@ -61,4 +61,4 @@ async def get_excel(city, search_query):
             worksheet.column_dimensions[column[0].column_letter].width = adjusted_width
 
 
-asyncio.run(get_excel("samara", "Магазин телефонов"))
+# asyncio.run(get_excel("samara", "Магазин телефонов"))
