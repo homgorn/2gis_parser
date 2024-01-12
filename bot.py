@@ -61,7 +61,10 @@ async def show_summary(message: Message, data: Dict[str, Any]) -> None:
         os.remove(f"files/{translated_city}_{query}.xlsx")
         os.remove(f"result_output/{translated_city}_{query}.csv")
     except (Exception, TelegramBadRequest):
-        await bot.send_document(user_id, f"files/{translated_city}_{query}.xlsx")
+        await message.answer_document(
+            FSInputFile(f"files/{translated_city}_{query}.xlsx"),
+            caption="Произошла какая-то ошибка, но эти данные удалось получить",
+        )
         os.remove(f"files/{translated_city}_{query}.xlsx")
         os.remove(f"result_output/{translated_city}_{query}.csv")
 

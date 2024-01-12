@@ -123,7 +123,6 @@ async def run_parser(city, search_query, user_id):
     except (KeyboardInterrupt, Exception, TelegramBadRequest):
         save_data_to_csv(data_in_memory, city, search_query)
         await get_excel(city, search_query)
-        await bot.send_document(user_id, f"files/{city}_{search_query}.xlsx")
 
 
 async def main():
