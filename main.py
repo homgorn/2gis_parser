@@ -87,9 +87,9 @@ async def run_parser(city, search_query, user_id):
     try:
         url = f"https://2gis.ru/{city}/search/{search_query}"
         options = Options()
-        options.add_argument("-headless")
-        options.add_argument("--disable-dev-shm-usage")
-        options.add_argument("--no-sandbox")
+        # options.add_argument("-headless")
+        # options.add_argument("--disable-dev-shm-usage")
+        # options.add_argument("--no-sandbox")
         options.add_experimental_option(
             "prefs",
             {
@@ -136,16 +136,16 @@ async def run_parser(city, search_query, user_id):
                 await make_scroll(driver, xpathes.scroll)
                 await element_click(driver, xpathes.next_page_btn)
 
-            except NoSuchElementException:
+            except (NoSuchElementException, InvalidSessionIdException, TelegramBadRequest):
                 continue
 
         driver.quit()
         save_data_to_csv(data_in_memory, city, search_query)
         await get_excel(city, search_query)
-    except (InvalidSessionIdException, NoSuchElementException, TelegramBadRequest) as e:
-        print(e)
-        save_data_to_csv(data_in_memory, city, search_query)
-        await get_excel(city, search_query)
+    # except (InvalidSessionIdException, NoSuchElementException, TelegramBadRequest) as e:
+    #     print(e)
+    #     save_data_to_csv(data_in_memory, city, search_query)
+    #     await get_excel(city, search_query)
     except (KeyboardInterrupt, Exception, TelegramBadRequest) as e:
         print(e)
         save_data_to_csv(data_in_memory, city, search_query)
