@@ -2,7 +2,7 @@ import base64
 from urllib.parse import unquote
 
 
-def decode_fucking_social(encoded_url):
+async def decode_fucking_social(encoded_url):
     try:
         encoded_url = encoded_url.replace("\n", "").replace(" ", "")
         encoded_url = encoded_url.split("/")[-1]

@@ -14,7 +14,8 @@ from aiogram.types import FSInputFile, Message
 from dotenv import load_dotenv
 from mtranslate import translate
 
-from main import run_parser
+from main import run_parser, save_data_to_csv
+from save_on_excel import get_excel
 
 load_dotenv()
 TOKEN = os.getenv("TOKEN")
@@ -53,7 +54,8 @@ async def show_summary(message: Message, data: Dict[str, Any]) -> None:
     translated_city = translate(data["city"], "en", "ru").lower()
     user_id = message.from_user.id
     try:
-        await run_parser(translated_city, query, user_id)
+        loop = asyncio.get_event_loop()
+        loop.run_until_complete(await run_parser(translated_city, query, user_id))
         await message.answer_document(
             FSInputFile(f"files/{translated_city}_{query}.xlsx"),
             caption="Запрос выполнен успешно",
@@ -61,6 +63,7 @@ async def show_summary(message: Message, data: Dict[str, Any]) -> None:
         os.remove(f"files/{translated_city}_{query}.xlsx")
         os.remove(f"result_output/{translated_city}_{query}.csv")
     except (Exception, TelegramBadRequest):
+        await get_excel(translated_city, query)
         await message.answer_document(
             FSInputFile(f"files/{translated_city}_{query}.xlsx"),
             caption="Произошла какая-то ошибка, но эти данные удалось получить",
