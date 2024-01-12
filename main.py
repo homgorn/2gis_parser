@@ -109,11 +109,12 @@ async def run_parser(city, search_query, user_id):
 
         for _ in range(pages):
             try:
+                time.sleep(0.1)
                 main_block = await get_find_element(driver, xpathes.main_block)
                 count_items = len(main_block.find_elements(By.CSS_SELECTOR, "div"))
-                print(count_items)
                 for item in range(1, count_items + 1):
                     start_time = datetime.datetime.now()
+                    time.sleep(0.1)
                     if main_block.find_element(
                         By.CSS_SELECTOR, xpathes.main_block + f" > div:nth-child({item})"
                     ).get_attribute("class"):
