@@ -91,8 +91,9 @@ async def run_parser(city, search_query, user_id):
         element_click(driver, xpathes.main_banner)
         element_click(driver, xpathes.cookie_banner)
         count_all_items = int(get_element_text(driver, xpathes.items_count))
+        print(count_all_items)
         pages = round(count_all_items / 12 + 0.5)
-        # items_counts = 0
+        items_counts = 0
         data_in_memory = []
 
         for _ in range(pages):
@@ -106,8 +107,8 @@ async def run_parser(city, search_query, user_id):
                 if not item_clicked:
                     driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
                     element_click(main_block, f"div[{item}]/div/div[2]")
-                # print(f"Уже спарсили {items_counts} магазинов")
-                # items_counts += 1
+                print(f"Уже спарсили {items_counts} магазинов")
+                items_counts += 1
                 find_and_get_elements(driver, main_block, data_in_memory)
 
             driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
