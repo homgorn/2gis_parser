@@ -3,7 +3,6 @@ import cProfile
 import os
 import re
 import datetime
-import time
 
 import pandas as pd
 from aiogram import Bot
@@ -24,7 +23,6 @@ from utils.elements import (
     get_elements_text,
     move_to_element,
     make_scroll,
-    get_find_element,
 )
 from dotenv import load_dotenv
 
@@ -58,8 +56,9 @@ async def process_social(xpath, driver):
 async def find_and_get_elements(driver, main_block, data_in_memory):
     title = await get_element_text(driver, xpathes.title)
     print(title)
-    time.sleep(0.2)
+    driver.implicitly_wait(0.1)
     phone_btn_clicked = await element_click(driver, xpathes.phone_btn)
+    driver.implicitly_wait(0.1)
     phone = await get_elements_text(driver, xpathes.phone) if phone_btn_clicked else ""
     link = await get_element_text(driver, xpathes.link)
     socials_selectors = [xpathes.social[f"social{i}"] for i in range(1, 6)]
@@ -99,7 +98,7 @@ async def run_parser(city, search_query, user_id):
         )
         driver = webdriver.Chrome(options=options)
         driver.get(url)
-        # await element_click(driver, xpathes.main_banner)
+        await element_click(driver, xpathes.main_banner)
         await element_click(driver, xpathes.cookie_banner)
         count_all_items = int(await get_element_text(driver, xpathes.items_count))
         print(count_all_items)
@@ -109,45 +108,38 @@ async def run_parser(city, search_query, user_id):
 
         for _ in range(pages):
             try:
-                time.sleep(0.1)
-                main_block = await get_find_element(driver, xpathes.main_block)
-                count_items = len(main_block.find_elements(By.CSS_SELECTOR, "div"))
+                main_block = driver.find_element(By.XPATH, xpathes.main_block)
+                count_items = len(main_block.find_elements(By.XPATH, "div"))
+                print(count_items)
                 for item in range(1, count_items + 1):
-                    start_time = datetime.datetime.now()
-                    time.sleep(0.1)
-                    if main_block.find_element(
-                        By.CSS_SELECTOR, xpathes.main_block + f" > div:nth-child({item})"
-                    ).get_attribute("class"):
+                    # start_time = datetime.datetime.now()
+                    if main_block.find_element(By.XPATH, f"div[{item}]").get_attribute("class"):
                         continue
 
-                    item_clicked = await element_click(
-                        main_block, xpathes.main_block + f" > div:nth-child({item})"
-                    )
+                    item_clicked = await element_click(main_block, f"div[{item}]/div/div[2]")
                     if not item_clicked:
                         await make_scroll(driver, xpathes.scroll)
-                        await element_click(
-                            main_block, xpathes.main_block + f" > div:nth-child({item})"
-                        )
+                        await element_click(main_block, f"div[{item}]/div/div[2]")
 
                     print(f"Уже спарсили {items_counts} магазинов")
                     items_counts += 1
                     await find_and_get_elements(driver, main_block, data_in_memory)
-                    end_time = datetime.datetime.now()
-                    result = end_time - start_time
-                    print(f"Время выполнения итерации: {result} секунд")
+                    # end_time = datetime.datetime.now()
+                    # result = end_time - start_time
+                    # print(f"Время выполнения итерации: {result} секунд")
                 await make_scroll(driver, xpathes.scroll)
                 await element_click(driver, xpathes.next_page_btn)
 
-            except (NoSuchElementException, InvalidSessionIdException, TelegramBadRequest):
+            except NoSuchElementException:
                 continue
 
         driver.quit()
         save_data_to_csv(data_in_memory, city, search_query)
         await get_excel(city, search_query)
-    # except (InvalidSessionIdException, NoSuchElementException, TelegramBadRequest) as e:
-    #     print(e)
-    #     save_data_to_csv(data_in_memory, city, search_query)
-    #     await get_excel(city, search_query)
+    except (InvalidSessionIdException, NoSuchElementException, TelegramBadRequest) as e:
+        print(e)
+        save_data_to_csv(data_in_memory, city, search_query)
+        await get_excel(city, search_query)
     except (KeyboardInterrupt, Exception, TelegramBadRequest) as e:
         print(e)
         save_data_to_csv(data_in_memory, city, search_query)
@@ -156,7 +148,7 @@ async def run_parser(city, search_query, user_id):
 
 async def main():
     city = "samara"
-    search_query = "магазин техники"
+    search_query = "Магазин техники"
     await run_parser(city, search_query, 1)
 
 
