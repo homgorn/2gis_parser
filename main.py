@@ -23,7 +23,7 @@ from utils.elements import (
     get_elements_text,
     move_to_element,
     make_scroll,
-    get_find_element
+    get_find_element,
 )
 from dotenv import load_dotenv
 
@@ -59,7 +59,6 @@ async def find_and_get_elements(driver, main_block, data_in_memory):
     print(title)
     driver.implicitly_wait(0.1)
     phone_btn_clicked = await element_click(driver, xpathes.phone_btn)
-    driver.implicitly_wait(0.1)
     phone = await get_elements_text(driver, xpathes.phone) if phone_btn_clicked else ""
     link = await get_element_text(driver, xpathes.link)
     socials_selectors = [xpathes.social[f"social{i}"] for i in range(1, 6)]
@@ -114,14 +113,19 @@ async def run_parser(city, search_query, user_id):
                 print(count_items)
                 for item in range(1, count_items + 1):
                     start_time = datetime.datetime.now()
-                    if main_block.find_element(By.CSS_SELECTOR, xpathes.main_block + f" > div:nth-child({item})") \
-                            .get_attribute("class"):
+                    if main_block.find_element(
+                        By.CSS_SELECTOR, xpathes.main_block + f" > div:nth-child({item})"
+                    ).get_attribute("class"):
                         continue
 
-                    item_clicked = await element_click(main_block, xpathes.main_block + f" > div:nth-child({item})")
+                    item_clicked = await element_click(
+                        main_block, xpathes.main_block + f" > div:nth-child({item})"
+                    )
                     if not item_clicked:
                         await make_scroll(driver, xpathes.scroll)
-                        await element_click(main_block, xpathes.main_block + f" > div:nth-child({item})")
+                        await element_click(
+                            main_block, xpathes.main_block + f" > div:nth-child({item})"
+                        )
 
                     print(f"Уже спарсили {items_counts} магазинов")
                     items_counts += 1
@@ -150,7 +154,7 @@ async def run_parser(city, search_query, user_id):
 
 async def main():
     city = "samara"
-    search_query = "Вкусно и точка"
+    search_query = "магазин техники"
     await run_parser(city, search_query, 1)
 
 
