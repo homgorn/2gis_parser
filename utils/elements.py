@@ -6,7 +6,7 @@ from selenium.webdriver.remote.webdriver import WebDriver
 
 async def get_element_text(driver: WebDriver, path: str) -> str:
     try:
-        return driver.find_element(By.CSS_SELECTOR, path).text
+        return driver.find_element(By.XPATH, path).text
     except NoSuchElementException:
         return ""
 
@@ -18,7 +18,7 @@ async def make_scroll(driver, path):
 async def get_elements_text(driver: WebDriver, path: str) -> set:
     phone_set = set()
     try:
-        result = driver.find_elements(By.CSS_SELECTOR, path)
+        result = driver.find_elements(By.XPATH, path)
         for element in result:
             phone_set.add(element.text)
         return phone_set
@@ -49,7 +49,7 @@ async def move_to_element(driver: WebDriver, element) -> None:
 
 async def element_click(driver, path: str) -> bool:
     try:
-        driver.find_element(By.CSS_SELECTOR, path).click()
+        driver.find_element(By.XPATH, path).click()
         return True
     except:
         return False
