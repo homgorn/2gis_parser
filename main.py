@@ -3,6 +3,7 @@ import cProfile
 import os
 import re
 import datetime
+import time
 
 import pandas as pd
 from aiogram import Bot
@@ -57,7 +58,7 @@ async def process_social(xpath, driver):
 async def find_and_get_elements(driver, main_block, data_in_memory):
     title = await get_element_text(driver, xpathes.title)
     print(title)
-    driver.implicitly_wait(0.1)
+    time.sleep(0.2)
     phone_btn_clicked = await element_click(driver, xpathes.phone_btn)
     phone = await get_elements_text(driver, xpathes.phone) if phone_btn_clicked else ""
     link = await get_element_text(driver, xpathes.link)
