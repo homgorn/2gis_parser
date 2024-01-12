@@ -1,5 +1,4 @@
 import asyncio
-import cProfile
 import os
 import re
 import datetime
@@ -54,13 +53,16 @@ async def process_social(xpath, driver):
 
 
 async def find_and_get_elements(driver, main_block, data_in_memory):
+    count_errors = 0
     title = await get_element_text(driver, xpathes.title)
+    if title == "":
+        count_errors += 1
+        if count_errors >= 30:
+            raise Exception
     print(title)
     driver.implicitly_wait(0.1)
     phone_btn_clicked = await element_click(driver, xpathes.phone_btn)
-    driver.implicitly_wait(0.3)
     phone = await get_elements_text(driver, xpathes.phone) if phone_btn_clicked else ""
-    driver.implicitly_wait(0.3)
     link = await get_element_text(driver, xpathes.link)
     socials_selectors = [xpathes.social[f"social{i}"] for i in range(1, 6)]
 
