@@ -58,8 +58,9 @@ async def find_and_get_elements(driver, main_block, data_in_memory):
     print(title)
     driver.implicitly_wait(0.1)
     phone_btn_clicked = await element_click(driver, xpathes.phone_btn)
-    driver.implicitly_wait(0.1)
+    driver.implicitly_wait(0.3)
     phone = await get_elements_text(driver, xpathes.phone) if phone_btn_clicked else ""
+    driver.implicitly_wait(0.3)
     link = await get_element_text(driver, xpathes.link)
     socials_selectors = [xpathes.social[f"social{i}"] for i in range(1, 6)]
 
@@ -112,7 +113,7 @@ async def run_parser(city, search_query, user_id):
                 count_items = len(main_block.find_elements(By.XPATH, "div"))
                 print(count_items)
                 for item in range(1, count_items + 1):
-                    # start_time = datetime.datetime.now()
+                    start_time = datetime.datetime.now()
                     if main_block.find_element(By.XPATH, f"div[{item}]").get_attribute("class"):
                         continue
 
@@ -124,9 +125,9 @@ async def run_parser(city, search_query, user_id):
                     print(f"Уже спарсили {items_counts} магазинов")
                     items_counts += 1
                     await find_and_get_elements(driver, main_block, data_in_memory)
-                    # end_time = datetime.datetime.now()
-                    # result = end_time - start_time
-                    # print(f"Время выполнения итерации: {result} секунд")
+                    end_time = datetime.datetime.now()
+                    result = end_time - start_time
+                    print(f"Время выполнения итерации: {result} секунд")
                 await make_scroll(driver, xpathes.scroll)
                 await element_click(driver, xpathes.next_page_btn)
 
