@@ -1,15 +1,15 @@
 import asyncio
 import os
 import re
-import datetime
-
 import pandas as pd
+
 from aiogram import Bot
 from aiogram.exceptions import TelegramBadRequest
 from selenium import webdriver
 from selenium.common import InvalidSessionIdException, NoSuchElementException
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
+from selenium.webdriver.common.action_chains import ActionChains
 
 from save_on_excel import get_excel
 from utils import xpathes
@@ -21,7 +21,7 @@ from utils.elements import (
     get_element_text,
     get_elements_text,
     move_to_element,
-    make_scroll,
+    make_scroll
 )
 from dotenv import load_dotenv
 
@@ -43,7 +43,7 @@ def save_data_to_csv(data_in_memory, city, search_query):
 
 
 async def process_social(xpath, driver):
-    # driver.implicitly_wait(0.2)
+    driver.implicitly_wait(0.1)
     link = await get_element_href(driver, xpath)
     decoded_link = await decode_fucking_social(link)
     label = await get_element_label(driver, xpath)
@@ -61,9 +61,12 @@ async def find_and_get_elements(driver, main_block, data_in_memory):
             raise Exception
     print(title)
     driver.implicitly_wait(0.1)
-    phone_btn_clicked = await element_click(driver, xpathes.phone_btn)
-    phone = await get_elements_text(driver, xpathes.phone) if phone_btn_clicked else ""
-    link = await get_element_text(driver, xpathes.link)
+    element = driver.find_element(By.CSS_SELECTOR, xpathes.phone_btn)
+    ActionChains(driver).move_to_element(element).click().perform()
+    phone = await get_elements_text(driver, xpathes.phone)
+    print(phone)
+    link = await get_elements_text(driver, xpathes.link)
+    print(link)
     socials_selectors = [xpathes.social[f"social{i}"] for i in range(1, 6)]
 
     socials = []
@@ -115,7 +118,6 @@ async def run_parser(city, search_query, user_id):
                 count_items = len(main_block.find_elements(By.XPATH, "div"))
                 print(count_items)
                 for item in range(1, count_items + 1):
-                    # start_time = datetime.datetime.now()
                     if main_block.find_element(By.XPATH, f"div[{item}]").get_attribute("class"):
                         continue
 
@@ -127,9 +129,6 @@ async def run_parser(city, search_query, user_id):
                     print(f"Уже спарсили {items_counts} магазинов")
                     items_counts += 1
                     await find_and_get_elements(driver, main_block, data_in_memory)
-                    # end_time = datetime.datetime.now()
-                    # result = end_time - start_time
-                    # print(f"Время выполнения итерации: {result} секунд")
                 await make_scroll(driver, xpathes.scroll)
                 await element_click(driver, xpathes.next_page_btn)
 
@@ -152,7 +151,7 @@ async def run_parser(city, search_query, user_id):
 
 async def main():
     city = "samara"
-    search_query = "Магазин техники"
+    search_query = "нижнее белье"
     await run_parser(city, search_query, 1)
 
 
