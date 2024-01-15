@@ -10,19 +10,26 @@ async def get_excel(city, search_query):
         f"result_output/{city}_{search_query}.csv", converters={"outputs": literal_eval}
     )
     df = df.dropna(subset=["title"])
-    result_df = pd.DataFrame(columns=["title", "phone", "link", "social", "rating", "count"])
+    result_df = pd.DataFrame(
+        columns=[
+            "title",
+            "phone",
+            "link",
+            "social",
+            "rating",
+            "count",
+        ]
+    )
 
     for index, row in df.iterrows():
         title = row["title"]
-        link = row["link"]
-        phones = (
-            "".join(map(str, row["phone"])).replace("'", "").replace("{", "").replace("}", "")
-            if not pd.isna(row["phone"]) and row["phone"] != ""
-            else None
-        )
+        link = "\n".join(literal_eval(row["link"]))
+        phones = ""
+        if not isinstance(row["phone"], float) and ".." not in str(row["phone"]):
+            phones = "\n".join(literal_eval(row["phone"]))
         socials = "\n".join(literal_eval(row["socials"]))
 
-        rating = str(row["rating"])
+        rating = str(row["rating"]) if str(row["rating"]) != "nan" else ""
         count = df[df["title"] == title].shape[0]
         result_df = pd.concat(
             [
@@ -32,9 +39,9 @@ async def get_excel(city, search_query):
                         "title": [title],
                         "phone": [phones],
                         "link": [link],
-                        "social": [socials],
                         "rating": [rating],
                         "count": [count],
+                        "social": [socials],
                     }
                 ),
             ]
@@ -46,13 +53,14 @@ async def get_excel(city, search_query):
         result_df.to_excel(writer, index=False, sheet_name="Sheet1", engine="openpyxl")
         worksheet = writer.sheets["Sheet1"]
 
+        # Устанавливаем ширину для каждой колонки под её содержимое
         for column in worksheet.columns:
-            max_length = 0
+            max_length = 7
             column = [cell for cell in column]
             for cell in column:
                 try:
                     if len(str(cell.value)) > max_length:
-                        max_length = len(cell.value)
+                        max_length = len(cell.value) / 2
                 except:
                     pass
             adjusted_width = max_length + 2
@@ -61,4 +69,4 @@ async def get_excel(city, search_query):
             worksheet.column_dimensions[column[0].column_letter].width = adjusted_width
 
 
-# asyncio.run(get_excel("samara", "Магазин телефонов"))
+# asyncio.run(get_excel("samara", "Пиво"))
