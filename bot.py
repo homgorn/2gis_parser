@@ -13,9 +13,11 @@ from aiogram.fsm.state import State, StatesGroup
 from aiogram.types import FSInputFile, Message
 from dotenv import load_dotenv
 from mtranslate import translate
-
+from aiogram.utils.backoff import Backoff, BackoffConfig
 from main import run_parser
 from save_on_excel import get_excel
+
+DEFAULT_BACKOFF_CONFIG = BackoffConfig(min_delay=1.0, max_delay=5.0, factor=1.3, jitter=0.1)
 
 load_dotenv()
 TOKEN = os.getenv("TOKEN")
@@ -50,6 +52,8 @@ async def process_query(message: Message, state: FSMContext) -> None:
 
 
 async def show_summary(message: Message, data: Dict[str, Any]) -> None:
+    backoff_config: BackoffConfig = DEFAULT_BACKOFF_CONFIG
+    backoff = Backoff(config=backoff_config)
     query = data["query"]
     translated_city = translate(data["city"], "en", "ru").lower()
     try:
@@ -61,7 +65,8 @@ async def show_summary(message: Message, data: Dict[str, Any]) -> None:
         )
         os.remove(f"files/{translated_city}_{query}.xlsx")
         os.remove(f"result_output/{translated_city}_{query}.csv")
-    except (Exception, TelegramBadRequest):
+    except (Exception, TelegramBadRequest, ConnectionResetError):
+        backoff.reset()
         await get_excel(translated_city, query)
         await message.answer_document(
             FSInputFile(f"files/{translated_city}_{query}.xlsx"),
