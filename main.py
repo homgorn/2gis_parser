@@ -136,9 +136,11 @@ async def run_parser(city, search_query):
                 await find_and_get_elements(driver, main_block, data_in_memory)
             await make_scroll(driver, xpathes.scroll)
             await element_click(driver, xpathes.next_page_btn)
+            save_data_to_csv(data_in_memory, city, search_query)
+            data_in_memory = []
 
         driver.quit()
-        save_data_to_csv(data_in_memory, city, search_query)
+
         await get_excel(city, search_query)
 
     except (InvalidSessionIdException, NoSuchElementException, TelegramBadRequest) as e:

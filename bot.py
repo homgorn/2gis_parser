@@ -52,30 +52,23 @@ async def process_query(message: Message, state: FSMContext) -> None:
 async def show_summary(message: Message, data: Dict[str, Any]) -> None:
     query = data["query"]
     translated_city = translate(data["city"], "en", "ru").lower()
-    max_attempts = 3  # Максимальное количество попыток
-    for attempt in range(max_attempts):
-        try:
-            loop = asyncio.get_event_loop()
-            loop.run_until_complete(await run_parser(translated_city, query))
-            await message.answer_document(
-                FSInputFile(f"files/{translated_city}_{query}.xlsx"),
-                caption="Запрос выполнен успешно",
-            )
-            os.remove(f"files/{translated_city}_{query}.xlsx")
-            os.remove(f"result_output/{translated_city}_{query}.csv")
-            break  # Если успешно, выходим из цикла
-        except (Exception, TelegramBadRequest) as e:
-            print(f"Error on attempt {attempt + 1}: {e}")
-            if attempt + 1 < max_attempts:
-                await asyncio.sleep(2)  # Подождем перед повторной попыткой
-            else:
-                await get_excel(translated_city, query)
-                await message.answer_document(
-                    FSInputFile(f"files/{translated_city}_{query}.xlsx"),
-                    caption="Произошла какая-то ошибка, но эти данные удалось получить",
-                )
-                os.remove(f"files/{translated_city}_{query}.xlsx")
-                os.remove(f"result_output/{translated_city}_{query}.csv")
+    try:
+        loop = asyncio.get_event_loop()
+        loop.run_until_complete(await run_parser(translated_city, query))
+        await message.answer_document(
+            FSInputFile(f"files/{translated_city}_{query}.xlsx"),
+            caption="Запрос выполнен успешно",
+        )
+        os.remove(f"files/{translated_city}_{query}.xlsx")
+        os.remove(f"result_output/{translated_city}_{query}.csv")
+    except (Exception, TelegramBadRequest):
+        await get_excel(translated_city, query)
+        await message.answer_document(
+            FSInputFile(f"files/{translated_city}_{query}.xlsx"),
+            caption="Произошла какая-то ошибка, но эти данные удалось получить",
+        )
+        os.remove(f"files/{translated_city}_{query}.xlsx")
+        os.remove(f"result_output/{translated_city}_{query}.csv")
 
 
 async def main():
