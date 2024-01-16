@@ -153,7 +153,7 @@ async def run_parser(city, search_query):
 
 async def main():
     city = "samara"
-    search_query = "Пиво"
+    search_query = "Магазин техники"
     await run_parser(city, search_query)
 
 

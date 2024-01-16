@@ -17,7 +17,7 @@ async def get_excel(city, search_query):
             "link",
             "social",
             "rating",
-            "count",
+            # "count",
         ]
     )
 
@@ -30,7 +30,7 @@ async def get_excel(city, search_query):
         socials = "\n".join(literal_eval(row["socials"]))
 
         rating = str(row["rating"]) if str(row["rating"]) != "nan" else ""
-        count = df[df["title"] == title].shape[0]
+        # count = df[df["title"] == title].shape[0]
         result_df = pd.concat(
             [
                 result_df,
@@ -40,7 +40,7 @@ async def get_excel(city, search_query):
                         "phone": [phones],
                         "link": [link],
                         "rating": [rating],
-                        "count": [count],
+                        # "count": [count],
                         "social": [socials],
                     }
                 ),
@@ -59,7 +59,7 @@ async def get_excel(city, search_query):
             column = [cell for cell in column]
             for cell in column:
                 try:
-                    if len(str(cell.value)) > max_length:
+                    if len(str(cell.value)) > max_length * 3:
                         max_length = len(cell.value) / 2
                 except:
                     pass
@@ -69,4 +69,4 @@ async def get_excel(city, search_query):
             worksheet.column_dimensions[column[0].column_letter].width = adjusted_width
 
 
-# asyncio.run(get_excel("samara", "Пиво"))
+asyncio.run(get_excel("samara", "Магазин техники"))
