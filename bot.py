@@ -51,9 +51,11 @@ async def process_query(message: Message, state: FSMContext) -> None:
     await state.clear()
 
 
+backoff_config: BackoffConfig = DEFAULT_BACKOFF_CONFIG
+backoff = Backoff(config=backoff_config)
+
+
 async def show_summary(message: Message, data: Dict[str, Any]) -> None:
-    backoff_config: BackoffConfig = DEFAULT_BACKOFF_CONFIG
-    backoff = Backoff(config=backoff_config)
     query = data["query"]
     translated_city = translate(data["city"], "en", "ru").lower()
     try:
@@ -79,7 +81,7 @@ async def show_summary(message: Message, data: Dict[str, Any]) -> None:
 async def main():
     dp = Dispatcher()
     dp.include_router(form_router)
-    await dp.start_polling(bot)
+    await dp.start_polling(bot, polling_timeout=100, backoff_config=backoff_config)
 
 
 if __name__ == "__main__":
