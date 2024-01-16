@@ -121,7 +121,6 @@ async def run_parser(city, search_query):
         for _ in range(pages):
             main_block = driver.find_element(By.XPATH, xpathes.main_block)
             count_items = len(main_block.find_elements(By.XPATH, "div"))
-            print(count_items)
             for item in range(1, count_items + 1):
                 if main_block.find_element(By.XPATH, f"div[{item}]").get_attribute("class"):
                     continue

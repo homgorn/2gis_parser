@@ -7,7 +7,7 @@ from typing import Any, Dict
 from aiogram import Bot, Dispatcher, Router
 from aiogram.enums import ParseMode
 from aiogram.exceptions import TelegramBadRequest
-from aiogram.filters import CommandStart
+from aiogram.filters import CommandStart, Command
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.types import FSInputFile, Message
@@ -47,7 +47,7 @@ async def process_city(message: Message, state: FSMContext) -> None:
 async def process_query(message: Message, state: FSMContext) -> None:
     data = await state.update_data(query=message.text)
     await state.clear()
-    await show_summary(message=message, data=data)
+    await show_summary(message=message, data=data, state=state)
     await state.clear()
 
 
@@ -55,9 +55,10 @@ backoff_config: BackoffConfig = DEFAULT_BACKOFF_CONFIG
 backoff = Backoff(config=backoff_config)
 
 
-async def show_summary(message: Message, data: Dict[str, Any]) -> None:
+async def show_summary(message: Message, data: Dict[str, Any], state: FSMContext) -> None:
     query = data["query"]
     translated_city = translate(data["city"], "en", "ru").lower()
+    await state.clear()
     try:
         loop = asyncio.get_event_loop()
         loop.run_until_complete(await run_parser(translated_city, query))
@@ -70,10 +71,7 @@ async def show_summary(message: Message, data: Dict[str, Any]) -> None:
     except (Exception, TelegramBadRequest, ConnectionResetError):
         backoff.reset()
         await get_excel(translated_city, query)
-        await message.answer_document(
-            FSInputFile(f"files/{translated_city}_{query}.xlsx"),
-            caption="Произошла какая-то ошибка, но эти данные удалось получить",
-        )
+        await message.answer_document(FSInputFile(f"files/{translated_city}_{query}.xlsx"))
         os.remove(f"files/{translated_city}_{query}.xlsx")
         os.remove(f"result_output/{translated_city}_{query}.csv")
 
