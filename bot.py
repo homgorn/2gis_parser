@@ -14,7 +14,7 @@ from aiogram.types import FSInputFile, Message
 from dotenv import load_dotenv
 from mtranslate import translate
 
-from main import run_parser, save_data_to_csv
+from main import run_parser
 from save_on_excel import get_excel
 
 load_dotenv()
@@ -52,10 +52,9 @@ async def process_query(message: Message, state: FSMContext) -> None:
 async def show_summary(message: Message, data: Dict[str, Any]) -> None:
     query = data["query"]
     translated_city = translate(data["city"], "en", "ru").lower()
-    user_id = message.from_user.id
     try:
         loop = asyncio.get_event_loop()
-        loop.run_until_complete(await run_parser(translated_city, query, user_id))
+        loop.run_until_complete(await run_parser(translated_city, query))
         await message.answer_document(
             FSInputFile(f"files/{translated_city}_{query}.xlsx"),
             caption="Запрос выполнен успешно",

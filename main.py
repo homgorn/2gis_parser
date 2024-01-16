@@ -50,7 +50,6 @@ async def process_social(xpath, driver):
     decoded_link = await decode_fucking_social(link)
     label = await get_element_label(driver, xpath)
     label_and_link = f"{label}: {decoded_link}"
-    print(label_and_link)
     return label_and_link if link != "" and label != "" else ""
 
 
@@ -96,7 +95,7 @@ async def find_and_get_elements(driver, main_block, data_in_memory):
     data_in_memory.append(row_data)
 
 
-async def run_parser(city, search_query, user_id):
+async def run_parser(city, search_query):
     try:
         url = f"https://2gis.ru/{city}/search/{search_query}"
         options = Options()
@@ -155,7 +154,7 @@ async def run_parser(city, search_query, user_id):
 async def main():
     city = "samara"
     search_query = "Пиво"
-    await run_parser(city, search_query, 1)
+    await run_parser(city, search_query)
 
 
 if __name__ == "__main__":
