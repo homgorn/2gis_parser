@@ -56,7 +56,7 @@ backoff = Backoff(config=backoff_config)
 
 
 async def show_summary(message: Message, data: Dict[str, Any], state: FSMContext) -> None:
-    query = data["query"]
+    query = "%20".join(data["query"].split()) if len(data["query"].split()) > 1 else data["query"]
     translated_city = translate(data["city"], "en", "ru").lower()
     await state.clear()
     try:

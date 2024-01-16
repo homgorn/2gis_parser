@@ -98,6 +98,7 @@ async def find_and_get_elements(driver, main_block, data_in_memory):
 async def run_parser(city, search_query):
     try:
         url = f"https://2gis.ru/{city}/search/{search_query}"
+        print(url)
         options = Options()
         options.add_argument("-headless")
         options.add_argument("--disable-dev-shm-usage")
@@ -121,7 +122,8 @@ async def run_parser(city, search_query):
         for _ in range(pages):
             main_block = driver.find_element(By.XPATH, xpathes.main_block)
             count_items = len(main_block.find_elements(By.XPATH, "div"))
-            for item in range(1, count_items + 1):
+            for item in range(1, count_items):
+                print(f"div[{item}]")
                 if main_block.find_element(By.XPATH, f"div[{item}]").get_attribute("class"):
                     continue
 
@@ -153,8 +155,8 @@ async def run_parser(city, search_query):
 
 
 async def main():
-    city = "samara"
-    search_query = "Магазин техники"
+    city = "moscow"
+    search_query = "Магазин телефонов"
     await run_parser(city, search_query)
 
 
