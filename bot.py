@@ -22,7 +22,7 @@ import os
 
 python_bin = "/root/2gis_parser/myenv/bin/python3.9"
 script_file = "/root/2gis_parser/bot.py"
-subprocess.Popen([python_bin, script_file])
+
 DEFAULT_BACKOFF_CONFIG = BackoffConfig(min_delay=1.0, max_delay=5.0, factor=1.3, jitter=0.1)
 
 load_dotenv()
@@ -86,7 +86,8 @@ async def show_summary(message: Message, data: Dict[str, Any], state: FSMContext
 async def main():
     dp = Dispatcher()
     dp.include_router(form_router)
-    await dp.start_polling(bot, polling_timeout=30, backoff_config=backoff_config)
+    while True:
+        await dp.start_polling(bot, polling_timeout=30, backoff_config=backoff_config)
 
 
 if __name__ == "__main__":
