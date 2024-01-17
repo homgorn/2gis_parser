@@ -32,6 +32,13 @@ TOKEN = os.getenv("TOKEN")
 bot = Bot(token=TOKEN)
 
 
+def create_dirs():
+    if not os.path.exists("result_output"):
+        os.makedirs("result_output")
+    if not os.path.exists("files"):
+        os.makedirs("files")
+
+
 def save_data_to_csv(data_in_memory, city, search_query):
     df = pd.DataFrame(
         data_in_memory, columns=["title", "link", "phone", "real_email", "socials", "rating"]
@@ -96,6 +103,7 @@ async def find_and_get_elements(driver, main_block, data_in_memory):
 
 
 async def run_parser(city, search_query):
+    create_dirs()
     options = Options()
     options.add_argument("-headless")
     options.add_argument("--disable-dev-shm-usage")
