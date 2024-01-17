@@ -125,9 +125,7 @@ async def run_parser(city, search_query):
         driver.quit()
 
         await get_excel(city, search_query)
-    except (TelegramBadRequest, TelegramNetworkError) as e:
-        print(e)
-        pass
+
     except (InvalidSessionIdException, NoSuchElementException) as e:
         print(e)
         driver.quit()
