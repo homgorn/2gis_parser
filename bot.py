@@ -72,10 +72,10 @@ async def show_summary(message: Message, data: Dict[str, Any], state: FSMContext
         await state.clear()
     except (Exception, TelegramBadRequest, TelegramNetworkError, ConnectionResetError):
         backoff.reset()
-        # await get_excel(translated_city, query)
-        # await message.answer_document(FSInputFile(f"files/{translated_city}_{query}.xlsx"))
-        # os.remove(f"files/{translated_city}_{query}.xlsx")
-        # os.remove(f"result_output/{translated_city}_{query}.csv")
+        await get_excel(translated_city, query)
+        await message.answer_document(FSInputFile(f"files/{translated_city}_{query}.xlsx"))
+        os.remove(f"files/{translated_city}_{query}.xlsx")
+        os.remove(f"result_output/{translated_city}_{query}.csv")
         await state.clear()
 
 
@@ -83,7 +83,7 @@ async def main():
     dp = Dispatcher()
     dp.include_router(form_router)
     while True:
-        await dp.start_polling(bot, polling_timeout=30, backoff_config=backoff_config)
+        await dp.start_polling(bot, polling_timeout=100, backoff_config=backoff_config)
 
 
 if __name__ == "__main__":
