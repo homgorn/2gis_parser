@@ -115,54 +115,54 @@ async def run_parser(city, search_query):
         },
     )
     driver = webdriver.Chrome(options=options)
-    try:
-        url = f"https://2gis.ru/{city}/search/{search_query}"
-        print(url)
+    # try:
+    url = f"https://2gis.ru/{city}/search/{search_query}"
+    print(url)
 
-        driver.get(url)
-        await element_click(driver, xpathes.main_banner)
-        await element_click(driver, xpathes.cookie_banner)
-        count_all_items = int(await get_element_text(driver, xpathes.items_count))
-        print(count_all_items)
-        pages = round(count_all_items / 12 + 0.5)
-        items_counts = 0
+    driver.get(url)
+    await element_click(driver, xpathes.main_banner)
+    await element_click(driver, xpathes.cookie_banner)
+    count_all_items = int(await get_element_text(driver, xpathes.items_count))
+    print(count_all_items)
+    pages = round(count_all_items / 12 + 0.5)
+    items_counts = 0
+    data_in_memory = []
+
+    for _ in range(pages):
+        main_block = driver.find_element(By.XPATH, xpathes.main_block)
+        count_items = len(main_block.find_elements(By.XPATH, "div"))
+        for item in range(1, count_items):
+            print(f"div[{item}]")
+            if main_block.find_element(By.XPATH, f"div[{item}]").get_attribute("class"):
+                continue
+
+            item_clicked = await element_click(main_block, f"div[{item}]/div/div[2]")
+            if not item_clicked:
+                await make_scroll(driver, xpathes.scroll)
+                await element_click(main_block, f"div[{item}]/div/div[2]")
+
+            print(f"Уже спарсили {items_counts} магазинов")
+            items_counts += 1
+            await find_and_get_elements(driver, main_block, data_in_memory)
+        await make_scroll(driver, xpathes.scroll)
+        await element_click(driver, xpathes.next_page_btn)
+        save_data_to_csv(data_in_memory, city, search_query)
         data_in_memory = []
 
-        for _ in range(pages):
-            main_block = driver.find_element(By.XPATH, xpathes.main_block)
-            count_items = len(main_block.find_elements(By.XPATH, "div"))
-            for item in range(1, count_items):
-                print(f"div[{item}]")
-                if main_block.find_element(By.XPATH, f"div[{item}]").get_attribute("class"):
-                    continue
+    driver.quit()
 
-                item_clicked = await element_click(main_block, f"div[{item}]/div/div[2]")
-                if not item_clicked:
-                    await make_scroll(driver, xpathes.scroll)
-                    await element_click(main_block, f"div[{item}]/div/div[2]")
+    await get_excel(city, search_query)
 
-                print(f"Уже спарсили {items_counts} магазинов")
-                items_counts += 1
-                await find_and_get_elements(driver, main_block, data_in_memory)
-            await make_scroll(driver, xpathes.scroll)
-            await element_click(driver, xpathes.next_page_btn)
-            save_data_to_csv(data_in_memory, city, search_query)
-            data_in_memory = []
-
-        driver.quit()
-
-        await get_excel(city, search_query)
-
-    except (InvalidSessionIdException, NoSuchElementException, TelegramBadRequest) as e:
-        print(e)
-        driver.quit()
-        save_data_to_csv(data_in_memory, city, search_query)
-        await get_excel(city, search_query)
-    except (KeyboardInterrupt, Exception, TelegramBadRequest) as e:
-        print(e)
-        driver.quit()
-        save_data_to_csv(data_in_memory, city, search_query)
-        await get_excel(city, search_query)
+    # except (InvalidSessionIdException, NoSuchElementException, TelegramBadRequest) as e:
+    #     print(e)
+    #     driver.quit()
+    #     save_data_to_csv(data_in_memory, city, search_query)
+    #     await get_excel(city, search_query)
+    # except (KeyboardInterrupt, Exception, TelegramBadRequest) as e:
+    #     print(e)
+    #     driver.quit()
+    #     save_data_to_csv(data_in_memory, city, search_query)
+    #     await get_excel(city, search_query)
 
 
 async def main():
