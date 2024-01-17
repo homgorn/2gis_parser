@@ -57,7 +57,7 @@ backoff = Backoff(config=backoff_config)
 
 
 async def show_summary(message: Message, data: Dict[str, Any], state: FSMContext) -> None:
-    query = data["query"]
+    query = "%20".join((data["query"].split(" ")))
     translated_city = translate(data["city"], "en", "ru").lower()
     try:
         loop = asyncio.get_event_loop()
