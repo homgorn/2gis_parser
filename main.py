@@ -15,9 +15,15 @@ from save_on_excel import get_excel
 from utils import xpathes
 from utils.decod_link import decode_fucking_social
 from utils.driver_settings import get_driver
-from utils.elements import (element_click, get_element_href, get_element_label,
-                            get_element_text, get_elements_text, make_scroll,
-                            move_to_element)
+from utils.elements import (
+    element_click,
+    get_element_href,
+    get_element_label,
+    get_element_text,
+    get_elements_text,
+    make_scroll,
+    move_to_element,
+)
 
 load_dotenv()
 TOKEN = os.getenv("TOKEN")
@@ -82,7 +88,7 @@ async def run_parser(city, search_query):
     driver = await get_driver()
 
     try:
-        url = f"https://2gis.ru/{city}/search/{search_query}"
+        url = f"https://2gis.ru/{city.lower()}/search/{search_query}"
         print(url)
 
         driver.get(url)
@@ -133,8 +139,8 @@ async def run_parser(city, search_query):
 
 
 async def main():
-    city = "moscow"
-    search_query = "Магазин телефонов"
+    city = "samara"
+    search_query = "Магазин%20техники"
     await run_parser(city, search_query)
 
 
