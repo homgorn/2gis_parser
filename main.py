@@ -4,7 +4,7 @@ import re
 import time
 
 from aiogram import Bot
-from aiogram.exceptions import TelegramBadRequest
+from aiogram.exceptions import TelegramBadRequest, TelegramNetworkError
 from dotenv import load_dotenv
 from selenium.common import InvalidSessionIdException, NoSuchElementException
 from selenium.webdriver.common.action_chains import ActionChains
@@ -88,7 +88,7 @@ async def run_parser(city, search_query):
     driver = await get_driver()
 
     try:
-        url = f"https://2gis.ru/{city.lower()}/search/{search_query}"
+        url = f"https://2gis.ru/{city}/search/{search_query}"
         print(url)
 
         driver.get(url)
@@ -125,13 +125,15 @@ async def run_parser(city, search_query):
         driver.quit()
 
         await get_excel(city, search_query)
-
-    except (InvalidSessionIdException, NoSuchElementException, TelegramBadRequest) as e:
+    except (TelegramBadRequest, TelegramNetworkError) as e:
+        print(e)
+        pass
+    except (InvalidSessionIdException, NoSuchElementException) as e:
         print(e)
         driver.quit()
         save_data_to_csv(data_in_memory, city, search_query)
         await get_excel(city, search_query)
-    except (KeyboardInterrupt, Exception, TelegramBadRequest) as e:
+    except (KeyboardInterrupt, Exception) as e:
         print(e)
         driver.quit()
         save_data_to_csv(data_in_memory, city, search_query)

@@ -6,7 +6,7 @@ from typing import Any, Dict
 
 from aiogram import Bot, Dispatcher, Router
 from aiogram.enums import ParseMode
-from aiogram.exceptions import TelegramBadRequest
+from aiogram.exceptions import TelegramBadRequest, TelegramNetworkError
 from aiogram.filters import CommandStart
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
@@ -57,7 +57,8 @@ backoff = Backoff(config=backoff_config)
 
 
 async def show_summary(message: Message, data: Dict[str, Any], state: FSMContext) -> None:
-    query = "%20".join((data["query"].split(" ")))
+    # query = "%20".join((data["query"].split(" ")))
+    query = data["query"]
     translated_city = translate(data["city"], "en", "ru").lower()
     try:
         loop = asyncio.get_event_loop()
@@ -69,12 +70,12 @@ async def show_summary(message: Message, data: Dict[str, Any], state: FSMContext
         os.remove(f"files/{translated_city}_{query}.xlsx")
         os.remove(f"result_output/{translated_city}_{query}.csv")
         await state.clear()
-    except (Exception, TelegramBadRequest, ConnectionResetError):
+    except (Exception, TelegramBadRequest, TelegramNetworkError, ConnectionResetError):
         backoff.reset()
-        await get_excel(translated_city, query)
-        await message.answer_document(FSInputFile(f"files/{translated_city}_{query}.xlsx"))
-        os.remove(f"files/{translated_city}_{query}.xlsx")
-        os.remove(f"result_output/{translated_city}_{query}.csv")
+        # await get_excel(translated_city, query)
+        # await message.answer_document(FSInputFile(f"files/{translated_city}_{query}.xlsx"))
+        # os.remove(f"files/{translated_city}_{query}.xlsx")
+        # os.remove(f"result_output/{translated_city}_{query}.csv")
         await state.clear()
 
 
