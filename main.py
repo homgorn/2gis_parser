@@ -96,20 +96,29 @@ async def find_and_get_elements(driver, main_block, data_in_memory):
 
 
 async def run_parser(city, search_query):
+    options = Options()
+    options.add_argument("-headless")
+    options.add_argument("--disable-dev-shm-usage")
+    options.add_argument("--no-sandbox")
+    options.add_argument("--disable-gpu")
+    options.add_argument("--blink-settings=imagesEnabled=false")
+    options.add_argument("--disable-extensions")
+    options.add_argument("--disable-application-cache")
+    options.add_argument("--disable-animations")
+    options.add_argument("--process-per-site=1")
+    options.add_argument("--disable-gpu-process-for-dx12-vulkan-info-collection")
+
+    options.add_experimental_option(
+        "prefs",
+        {
+            "profile.managed_default_content_settings.images": 2,
+        },
+    )
+    driver = webdriver.Chrome(options=options)
     try:
         url = f"https://2gis.ru/{city}/search/{search_query}"
         print(url)
-        options = Options()
-        options.add_argument("-headless")
-        options.add_argument("--disable-dev-shm-usage")
-        options.add_argument("--no-sandbox")
-        options.add_experimental_option(
-            "prefs",
-            {
-                "profile.managed_default_content_settings.images": 2,
-            },
-        )
-        driver = webdriver.Chrome(options=options)
+
         driver.get(url)
         await element_click(driver, xpathes.main_banner)
         await element_click(driver, xpathes.cookie_banner)
@@ -146,10 +155,12 @@ async def run_parser(city, search_query):
 
     except (InvalidSessionIdException, NoSuchElementException, TelegramBadRequest) as e:
         print(e)
+        driver.quit()
         save_data_to_csv(data_in_memory, city, search_query)
         await get_excel(city, search_query)
     except (KeyboardInterrupt, Exception, TelegramBadRequest) as e:
         print(e)
+        driver.quit()
         save_data_to_csv(data_in_memory, city, search_query)
         await get_excel(city, search_query)
 
