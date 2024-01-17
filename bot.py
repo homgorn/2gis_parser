@@ -16,6 +16,17 @@ from mtranslate import translate
 from aiogram.utils.backoff import Backoff, BackoffConfig
 from main import run_parser
 from save_on_excel import get_excel
+import os
+
+venv_path = "/root/2gis_parser/myenv"
+
+activate_script = os.path.join(venv_path, "bin", "activate_this.py")
+
+if os.path.exists(activate_script):
+    exec(open(activate_script).read(), dict(__file__=activate_script))
+else:
+    print("Файл activate_this.py не найден. Попробуйте использовать другой метод активации.")
+
 
 DEFAULT_BACKOFF_CONFIG = BackoffConfig(min_delay=1.0, max_delay=5.0, factor=1.3, jitter=0.1)
 
