@@ -7,21 +7,16 @@ from typing import Any, Dict
 from aiogram import Bot, Dispatcher, Router
 from aiogram.enums import ParseMode
 from aiogram.exceptions import TelegramBadRequest
-from aiogram.filters import CommandStart, Command
+from aiogram.filters import CommandStart
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.types import FSInputFile, Message
+from aiogram.utils.backoff import Backoff, BackoffConfig
 from dotenv import load_dotenv
 from mtranslate import translate
-from aiogram.utils.backoff import Backoff, BackoffConfig
-import subprocess
 
 from main import run_parser
 from save_on_excel import get_excel
-import os
-
-python_bin = "/root/2gis_parser/myenv/bin/python3.9"
-script_file = "/root/2gis_parser/bot.py"
 
 DEFAULT_BACKOFF_CONFIG = BackoffConfig(min_delay=1.0, max_delay=5.0, factor=1.3, jitter=0.1)
 

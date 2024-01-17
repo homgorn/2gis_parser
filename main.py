@@ -3,52 +3,25 @@ import os
 import re
 import time
 
-import pandas as pd
-
 from aiogram import Bot
 from aiogram.exceptions import TelegramBadRequest
-from selenium import webdriver
+from dotenv import load_dotenv
 from selenium.common import InvalidSessionIdException, NoSuchElementException
-from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.common.by import By
 from selenium.webdriver.common.action_chains import ActionChains
+from selenium.webdriver.common.by import By
 
+from save_on_csv import create_dirs, save_data_to_csv
 from save_on_excel import get_excel
 from utils import xpathes
 from utils.decod_link import decode_fucking_social
-from utils.elements import (
-    element_click,
-    get_element_href,
-    get_element_label,
-    get_element_text,
-    get_elements_text,
-    move_to_element,
-    make_scroll,
-)
-from dotenv import load_dotenv
+from utils.driver_settings import get_driver
+from utils.elements import (element_click, get_element_href, get_element_label,
+                            get_element_text, get_elements_text, make_scroll,
+                            move_to_element)
 
 load_dotenv()
 TOKEN = os.getenv("TOKEN")
 bot = Bot(token=TOKEN)
-
-
-def create_dirs():
-    if not os.path.exists("result_output"):
-        os.makedirs("result_output")
-    if not os.path.exists("files"):
-        os.makedirs("files")
-
-
-def save_data_to_csv(data_in_memory, city, search_query):
-    df = pd.DataFrame(
-        data_in_memory, columns=["title", "link", "phone", "real_email", "socials", "rating"]
-    )
-    df.to_csv(
-        f"result_output/{city}_{search_query}.csv",
-        mode="a",
-        header=not os.path.isfile(f"result_output/{city}_{search_query}.csv"),
-        index=False,
-    )
 
 
 async def process_social(xpath, driver):
@@ -63,10 +36,12 @@ async def process_social(xpath, driver):
 async def find_and_get_elements(driver, main_block, data_in_memory):
     count_errors = 0
     title = await get_element_text(driver, xpathes.title)
+
     if title == "":
         count_errors += 1
         if count_errors >= 10:
             raise Exception
+
     print(title)
     try:
         time.sleep(0.4)
@@ -74,17 +49,17 @@ async def find_and_get_elements(driver, main_block, data_in_memory):
         ActionChains(driver).move_to_element(element).click().perform()
         phone_numper = await get_elements_text(driver, xpathes.phone)
         phone = phone_numper if "..." not in phone_numper else ""
-        print(phone)
     except NoSuchElementException:
         phone = ""
         pass
+
     link = await get_elements_text(driver, xpathes.link)
-    print(link)
     socials_selectors = [xpathes.social[f"social{i}"] for i in range(1, 6)]
 
     socials = []
     for xpath in socials_selectors:
         socials.append(await process_social(xpath, driver))
+
     email = await get_element_href(driver, xpathes.email)
     real_email = re.search(r"mailto:(.+)", email).group(1) if email != "" else ""
     rating = await get_element_text(driver, xpathes.rating)
@@ -104,25 +79,8 @@ async def find_and_get_elements(driver, main_block, data_in_memory):
 
 async def run_parser(city, search_query):
     create_dirs()
-    options = Options()
-    options.add_argument("-headless")
-    options.add_argument("--disable-dev-shm-usage")
-    options.add_argument("--no-sandbox")
-    options.add_argument("--disable-gpu")
-    options.add_argument("--blink-settings=imagesEnabled=false")
-    options.add_argument("--disable-extensions")
-    options.add_argument("--disable-application-cache")
-    options.add_argument("--disable-animations")
-    options.add_argument("--process-per-site=1")
-    options.add_argument("--disable-gpu-process-for-dx12-vulkan-info-collection")
+    driver = await get_driver()
 
-    options.add_experimental_option(
-        "prefs",
-        {
-            "profile.managed_default_content_settings.images": 2,
-        },
-    )
-    driver = webdriver.Chrome(options=options)
     try:
         url = f"https://2gis.ru/{city}/search/{search_query}"
         print(url)
@@ -152,6 +110,7 @@ async def run_parser(city, search_query):
                 print(f"Уже спарсили {items_counts} магазинов")
                 items_counts += 1
                 await find_and_get_elements(driver, main_block, data_in_memory)
+
             await make_scroll(driver, xpathes.scroll)
             await element_click(driver, xpathes.next_page_btn)
             save_data_to_csv(data_in_memory, city, search_query)
