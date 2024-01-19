@@ -91,7 +91,5 @@ async def main():
 
 
 if __name__ == "__main__":
-    if not os.path.exists("logs/"):
-        os.makedirs("logs")
     logging.basicConfig(level=logging.INFO, stream=sys.stdout)
     asyncio.run(main())

@@ -29,7 +29,8 @@ load_dotenv()
 TOKEN = os.getenv("TOKEN")
 bot = Bot(token=TOKEN)
 
-
+if not os.path.exists("logs/"):
+    os.makedirs("logs")
 logging.basicConfig(
     filename="logs/your_bot.log",
     level=logging.ERROR,
