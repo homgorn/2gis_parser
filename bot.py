@@ -15,6 +15,7 @@ from aiogram.types import FSInputFile, Message
 from aiogram.utils.backoff import Backoff, BackoffConfig
 from dotenv import load_dotenv
 from mtranslate import translate
+import logging
 
 from main import run_parser
 from save_on_excel import get_excel
@@ -90,5 +91,7 @@ async def main():
 
 
 if __name__ == "__main__":
+    if not os.path.exists("logs/"):
+        os.makedirs("logs")
     logging.basicConfig(level=logging.INFO, stream=sys.stdout)
     asyncio.run(main())

@@ -2,6 +2,7 @@ import asyncio
 import os
 import re
 import time
+import logging  # Добавлено для использования модуля logging
 
 from aiogram import Bot
 from aiogram.exceptions import TelegramBadRequest, TelegramNetworkError
@@ -9,7 +10,6 @@ from dotenv import load_dotenv
 from selenium.common import InvalidSessionIdException, NoSuchElementException
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.by import By
-
 from save_on_csv import create_dirs, save_data_to_csv
 from save_on_excel import get_excel
 from utils import xpathes
@@ -30,57 +30,70 @@ TOKEN = os.getenv("TOKEN")
 bot = Bot(token=TOKEN)
 
 
+logging.basicConfig(
+    filename="logs/your_bot.log",
+    level=logging.ERROR,
+    format="%(asctime)s - %(levelname)s - %(message)s",
+)
+logger = logging.getLogger(__name__)
+
+
 async def process_social(xpath, driver):
-    # driver.implicitly_wait(0.1)
-    link = await get_element_href(driver, xpath)
-    decoded_link = await decode_fucking_social(link)
-    label = await get_element_label(driver, xpath)
-    label_and_link = f"{label}: {decoded_link}"
-    return label_and_link if link != "" and label != "" else ""
+    try:
+        link = await get_element_href(driver, xpath)
+        decoded_link = await decode_fucking_social(link)
+        label = await get_element_label(driver, xpath)
+        label_and_link = f"{label}: {decoded_link}"
+        return label_and_link if link != "" and label != "" else ""
+    except Exception as e:
+        logger.error(f"Error processing social link: {e}")
+        return ""
 
 
 async def find_and_get_elements(driver, main_block, data_in_memory):
     count_errors = 0
-    title = await get_element_text(driver, xpathes.title)
-
-    if title == "":
-        count_errors += 1
-        if count_errors >= 10:
-            raise Exception
-
-    print(title)
     try:
+        title = await get_element_text(driver, xpathes.title)
+        if title == "":
+            count_errors += 1
+            if count_errors >= 10:
+                raise Exception
+        print(title)
+
         time.sleep(0.2)
         element = driver.find_element(By.CSS_SELECTOR, xpathes.phone_btn)
         ActionChains(driver).move_to_element(element).click().perform()
         phone_numper = await get_elements_text(driver, xpathes.phone)
         phone = phone_numper if "..." not in phone_numper else ""
-    except NoSuchElementException:
+    except Exception as e:
+        logger.error(f"Error finding and getting elements: {e}")
         phone = ""
-        pass
 
-    link = await get_elements_text(driver, xpathes.link)
-    socials_selectors = [xpathes.social[f"social{i}"] for i in range(1, 6)]
+    try:
+        link = await get_elements_text(driver, xpathes.link)
+        socials_selectors = [xpathes.social[f"social{i}"] for i in range(1, 6)]
 
-    socials = []
-    for xpath in socials_selectors:
-        socials.append(await process_social(xpath, driver))
+        socials = []
+        for xpath in socials_selectors:
+            socials.append(await process_social(xpath, driver))
 
-    email = await get_element_href(driver, xpathes.email)
-    real_email = re.search(r"mailto:(.+)", email).group(1) if email != "" else ""
-    rating = await get_element_text(driver, xpathes.rating)
-    await move_to_element(driver, main_block)
+        email = await get_element_href(driver, xpathes.email)
+        real_email = re.search(r"mailto:(.+)", email).group(1) if email != "" else ""
+        rating = await get_element_text(driver, xpathes.rating)
+        await move_to_element(driver, main_block)
 
-    row_data = [
-        title,
-        link,
-        phone,
-        real_email,
-        socials,
-        rating,
-    ]
+        row_data = [
+            title,
+            link,
+            phone,
+            real_email,
+            socials,
+            rating,
+        ]
 
-    data_in_memory.append(row_data)
+        data_in_memory.append(row_data)
+    except Exception as e:
+        logger.error(f"Error finding and getting elements: {e}")
 
 
 async def run_parser(city, search_query):
@@ -132,15 +145,16 @@ async def run_parser(city, search_query):
         driver.quit()
 
         await get_excel(city, search_query)
-    except TelegramNetworkError:
+    except Exception as e:
+        logger.error(f"Error in main parsing process: {e}")
         pass
     except (InvalidSessionIdException, NoSuchElementException) as e:
-        print(e)
+        logger.error(f"Error in main parsing process: {e}")
         driver.quit()
         save_data_to_csv(data_in_memory, city, search_query)
         await get_excel(city, search_query)
     except (KeyboardInterrupt, Exception) as e:
-        print(e)
+        logger.error(f"Error in main parsing process: {e}")
         driver.quit()
         save_data_to_csv(data_in_memory, city, search_query)
         await get_excel(city, search_query)
