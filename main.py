@@ -50,7 +50,7 @@ async def find_and_get_elements(driver, main_block, data_in_memory):
 
     print(title)
     try:
-        time.sleep(0.4)
+        time.sleep(0.2)
         element = driver.find_element(By.CSS_SELECTOR, xpathes.phone_btn)
         ActionChains(driver).move_to_element(element).click().perform()
         phone_numper = await get_elements_text(driver, xpathes.phone)
@@ -101,21 +101,28 @@ async def run_parser(city, search_query):
         data_in_memory = []
 
         for _ in range(pages):
-            main_block = driver.find_element(By.XPATH, xpathes.main_block)
-            count_items = len(main_block.find_elements(By.XPATH, "div"))
-            for item in range(1, count_items):
-                print(f"div[{item}]")
-                if main_block.find_element(By.XPATH, f"div[{item}]").get_attribute("class"):
-                    continue
+            try:
+                main_block = driver.find_element(By.XPATH, xpathes.main_block)
+                count_items = len(main_block.find_elements(By.XPATH, "div"))
+                for item in range(1, count_items):
+                    try:
+                        if main_block.find_element(By.XPATH, f"div[{item}]").get_attribute("class"):
+                            continue
 
-                item_clicked = await element_click(main_block, f"div[{item}]/div/div[2]")
-                if not item_clicked:
-                    await make_scroll(driver, xpathes.scroll)
-                    await element_click(main_block, f"div[{item}]/div/div[2]")
+                        item_clicked = await element_click(main_block, f"div[{item}]/div/div[2]")
+                        if not item_clicked:
+                            await make_scroll(driver, xpathes.scroll)
+                            await element_click(main_block, f"div[{item}]/div/div[2]")
 
-                print(f"Уже спарсили {items_counts} магазинов")
-                items_counts += 1
-                await find_and_get_elements(driver, main_block, data_in_memory)
+                        print(f"Уже спарсили {items_counts} магазинов")
+                        items_counts += 1
+
+                        await find_and_get_elements(driver, main_block, data_in_memory)
+                    except TelegramNetworkError:
+                        continue
+
+            except TelegramNetworkError:
+                continue
 
             await make_scroll(driver, xpathes.scroll)
             await element_click(driver, xpathes.next_page_btn)
