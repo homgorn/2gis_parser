@@ -17,6 +17,8 @@ from dotenv import load_dotenv
 from mtranslate import translate
 import logging
 
+from selenium.common import TimeoutException
+
 from main import run_parser
 from save_on_excel import get_excel
 
@@ -73,6 +75,9 @@ async def show_summary(message: Message, data: Dict[str, Any], state: FSMContext
         os.remove(f"files/{translated_city}_{query}.xlsx")
         os.remove(f"result_output/{translated_city}_{query}.csv")
         await state.clear()
+    except TimeoutException as e:
+        print(f"Произошло исключение TimeoutException: {e}")
+        pass
     except TelegramNetworkError:
         pass
     except Exception:

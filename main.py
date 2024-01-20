@@ -151,13 +151,14 @@ async def run_parser(city, search_query):
     except TimeoutException as e:
         print(f"Произошло исключение TimeoutException: {e}")
         pass
+
     except InvalidSessionIdException:
         pass
 
     except NoSuchElementException:
         pass
 
-    except (KeyboardInterrupt, Exception):
+    except KeyboardInterrupt:
         # logger.error(f"Error in main parsing process: {e}")
         driver.quit()
         save_data_to_csv(data_in_memory, city, search_query)

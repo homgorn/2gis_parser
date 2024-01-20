@@ -16,6 +16,7 @@ async def get_driver():
     options.add_argument("--disable-gpu-process-for-dx12-vulkan-info-collection")
     options.add_argument("--disable-session-crashed-bubble")
     options.add_argument("--disable-session-restore")
+    options.add_argument("--disable-browser-side-navigation")
 
     options.add_experimental_option(
         "prefs",
@@ -24,4 +25,5 @@ async def get_driver():
         },
     )
     driver = webdriver.Chrome(options=options)
+    driver.set_page_load_timeout(60)
     return driver
