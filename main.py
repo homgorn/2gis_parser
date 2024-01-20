@@ -7,7 +7,7 @@ import logging  # Добавлено для использования моду�
 from aiogram import Bot
 from aiogram.exceptions import TelegramBadRequest, TelegramNetworkError
 from dotenv import load_dotenv
-from selenium.common import InvalidSessionIdException, NoSuchElementException
+from selenium.common import InvalidSessionIdException, NoSuchElementException, TimeoutException
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.by import By
 from save_on_csv import create_dirs, save_data_to_csv
@@ -147,13 +147,17 @@ async def run_parser(city, search_query):
         driver.quit()
 
         await get_excel(city, search_query)
+
+    except TimeoutException as e:
+        print(f"Произошло исключение TimeoutException: {e}")
+        pass
     except InvalidSessionIdException:
         pass
 
-    except NoSuchElementException as e:
+    except NoSuchElementException:
         pass
 
-    except (KeyboardInterrupt, Exception) as e:
+    except (KeyboardInterrupt, Exception):
         # logger.error(f"Error in main parsing process: {e}")
         driver.quit()
         save_data_to_csv(data_in_memory, city, search_query)
