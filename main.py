@@ -31,12 +31,12 @@ bot = Bot(token=TOKEN)
 
 if not os.path.exists("logs/"):
     os.makedirs("logs")
-logging.basicConfig(
-    filename="logs/your_bot.log",
-    level=logging.ERROR,
-    format="%(asctime)s - %(levelname)s - %(message)s",
-)
-logger = logging.getLogger(__name__)
+# logging.basicConfig(
+#     filename="logs/your_bot.log",
+#     level=logging.ERROR,
+#     format="%(asctime)s - %(levelname)s - %(message)s",
+# )
+# logger = logging.getLogger(__name__)
 
 
 async def process_social(xpath, driver):
@@ -47,7 +47,7 @@ async def process_social(xpath, driver):
         label_and_link = f"{label}: {decoded_link}"
         return label_and_link if link != "" and label != "" else ""
     except Exception as e:
-        logger.error(f"Error processing social link: {e}")
+        pass
         return ""
 
 
@@ -59,15 +59,14 @@ async def find_and_get_elements(driver, main_block, data_in_memory):
             count_errors += 1
             if count_errors >= 10:
                 raise Exception
-        print(title)
+        # print(title)
 
         time.sleep(0.2)
         element = driver.find_element(By.CSS_SELECTOR, xpathes.phone_btn)
         ActionChains(driver).move_to_element(element).click().perform()
         phone_numper = await get_elements_text(driver, xpathes.phone)
         phone = phone_numper if "..." not in phone_numper else ""
-    except Exception as e:
-        logger.error(f"Error finding and getting elements: {e}")
+    except Exception:
         phone = ""
 
     try:
@@ -94,7 +93,9 @@ async def find_and_get_elements(driver, main_block, data_in_memory):
 
         data_in_memory.append(row_data)
     except Exception as e:
-        logger.error(f"Error finding and getting elements: {e}")
+        # logger.error(f"Error finding and getting elements: {e}")
+        print(e)
+        pass
 
 
 async def run_parser(city, search_query):
@@ -127,8 +128,8 @@ async def run_parser(city, search_query):
                         if not item_clicked:
                             await make_scroll(driver, xpathes.scroll)
                             await element_click(main_block, f"div[{item}]/div/div[2]")
-
-                        print(f"Уже спарсили {items_counts} магазинов")
+                        if items_counts % 100 == 0:
+                            print(f"Уже спарсили {items_counts} магазинов")
                         items_counts += 1
 
                         await find_and_get_elements(driver, main_block, data_in_memory)
@@ -148,13 +149,12 @@ async def run_parser(city, search_query):
         await get_excel(city, search_query)
     except InvalidSessionIdException:
         pass
+
     except NoSuchElementException as e:
-        logger.error(f"Error in main parsing process: {e}")
-        driver.quit()
-        save_data_to_csv(data_in_memory, city, search_query)
-        await get_excel(city, search_query)
+        pass
+
     except (KeyboardInterrupt, Exception) as e:
-        logger.error(f"Error in main parsing process: {e}")
+        # logger.error(f"Error in main parsing process: {e}")
         driver.quit()
         save_data_to_csv(data_in_memory, city, search_query)
         await get_excel(city, search_query)
