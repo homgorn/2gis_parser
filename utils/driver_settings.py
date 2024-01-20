@@ -17,6 +17,8 @@ async def get_driver():
     options.add_argument("--disable-session-crashed-bubble")
     options.add_argument("--disable-session-restore")
     options.add_argument("--disable-browser-side-navigation")
+    options.add_argument("enable-features=NetworkServiceInProcess")
+    options.add_argument("disable-features=NetworkService")
 
     options.add_experimental_option(
         "prefs",
