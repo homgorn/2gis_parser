@@ -146,10 +146,9 @@ async def run_parser(city, search_query):
         driver.quit()
 
         await get_excel(city, search_query)
-    except Exception as e:
-        logger.error(f"Error in main parsing process: {e}")
+    except InvalidSessionIdException:
         pass
-    except (InvalidSessionIdException, NoSuchElementException) as e:
+    except NoSuchElementException as e:
         logger.error(f"Error in main parsing process: {e}")
         driver.quit()
         save_data_to_csv(data_in_memory, city, search_query)
