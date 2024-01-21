@@ -93,8 +93,7 @@ async def show_summary(message: Message, data: Dict[str, Any], state: FSMContext
 async def main():
     dp = Dispatcher()
     dp.include_router(form_router)
-    while True:
-        await dp.start_polling(bot, polling_timeout=50, backoff_config=backoff_config)
+    await dp.start_polling(bot, polling_timeout=50, backoff_config=backoff_config)
 
 
 if __name__ == "__main__":
