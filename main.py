@@ -99,9 +99,9 @@ async def find_and_get_elements(driver, main_block, data_in_memory):
 
 
 async def run_parser(city, search_query, url):
+    current_page = ""
     create_dirs()
     driver = await get_driver()
-
     try:
         print(url)
         driver.get(url)
@@ -114,6 +114,7 @@ async def run_parser(city, search_query, url):
         data_in_memory = []
 
         for _ in range(pages):
+            current_page = driver.current_url
             try:
                 main_block = driver.find_element(By.XPATH, xpathes.main_block)
                 count_items = len(main_block.find_elements(By.XPATH, "div"))
@@ -151,8 +152,7 @@ async def run_parser(city, search_query, url):
 
     except InvalidSessionIdException as e:
         print(f"Произошло исключение InvalidSessionIdException: {e}")
-        current_page = driver.current_url
-        print(driver.current_url)
+        print(current_page)
         driver.quit()
         time.sleep(20)
         await run_parser(city, search_query, current_page)
@@ -165,6 +165,8 @@ async def run_parser(city, search_query, url):
         driver.quit()
         save_data_to_csv(data_in_memory, city, search_query)
         await get_excel(city, search_query)
+    finally:
+        driver.quit()
 
 
 async def main():
