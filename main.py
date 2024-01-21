@@ -135,7 +135,14 @@ async def run_parser(city, search_query):
                         await find_and_get_elements(driver, main_block, data_in_memory)
                     except TelegramNetworkError:
                         continue
-
+            except InvalidSessionIdException as e:
+                print(f"Произошло исключение InvalidSessionIdException: {e}")
+                current_page = driver.current_url
+                driver.close()
+                driver.quit()
+                time.sleep(10)
+                driver.get(current_page)
+                continue
             except TelegramNetworkError:
                 continue
 
@@ -149,11 +156,18 @@ async def run_parser(city, search_query):
         await get_excel(city, search_query)
     except TelegramNetworkError as e:
         print(f"Произошло исключение TimeoutException: {e}")
+
     except TimeoutException as e:
         print(f"Произошло исключение TimeoutException: {e}")
 
     except InvalidSessionIdException as e:
         print(f"Произошло исключение InvalidSessionIdException: {e}")
+        current_page = driver.current_url
+        driver.close()
+        driver.quit()
+        time.sleep(10)
+        driver.get(current_page)
+        pass
 
     except NoSuchElementException as e:
         print(f"Произошло исключение NoSuchElementException: {e}")
