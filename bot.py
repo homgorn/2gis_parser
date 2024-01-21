@@ -68,7 +68,7 @@ async def show_summary(message: Message, data: Dict[str, Any], state: FSMContext
     # try:
     url = f"https://2gis.ru/{translated_city}/search/{query}"
     loop = asyncio.get_event_loop()
-    loop.run_until_complete(await run_parser(translated_city, query, url))
+    loop.run_until_complete(await run_parser(translated_city, query, url, 1))
     await message.answer_document(
         FSInputFile(f"files/{translated_city}_{query}.xlsx"),
         caption="Запрос выполнен успешно",

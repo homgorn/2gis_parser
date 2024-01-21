@@ -88,10 +88,11 @@ async def find_and_get_elements(driver, main_block, data_in_memory):
     data_in_memory.append(row_data)
 
 
-async def run_parser(city, search_query, url):
+async def run_parser(city, search_query, url, page):
     current_page = ""
     create_dirs()
     driver = await get_driver()
+    page = page
     try:
         print(url)
         driver.get(url)
@@ -103,7 +104,8 @@ async def run_parser(city, search_query, url):
         items_counts = 0
         data_in_memory = []
 
-        for _ in range(pages):
+        for i in range(page, pages + 1):
+            page = i
             a = random.randint(1, 5)
             current_page = driver.current_url
             try:
@@ -111,8 +113,8 @@ async def run_parser(city, search_query, url):
                 count_items = len(main_block.find_elements(By.XPATH, "div"))
                 for item in range(1, count_items):
                     try:
-                        # if a == 2:
-                        #     driver.close()
+                        if a == 2:
+                            driver.close()
                         if main_block.find_element(By.XPATH, f"div[{item}]").get_attribute("class"):
                             continue
                         item_clicked = await element_click(main_block, f"div[{item}]/div/div[2]")
@@ -150,7 +152,7 @@ async def run_parser(city, search_query, url):
         print(current_page)
         driver.quit()
         time.sleep(5)
-        await run_parser(city, search_query, current_page)
+        await run_parser(city, search_query, current_page, page)
 
     except KeyboardInterrupt:
         # logger.error(f"Error in main parsing process: {e}")
@@ -165,7 +167,7 @@ async def main():
     city = "samara"
     search_query = "Магазин%20техники"
     url = f"https://2gis.ru/{city}/search/{search_query}"
-    await run_parser(city, search_query, url)
+    await run_parser(city, search_query, url, 1)
 
 
 if __name__ == "__main__":
