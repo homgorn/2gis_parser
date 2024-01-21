@@ -78,8 +78,9 @@ async def show_summary(message: Message, data: Dict[str, Any], state: FSMContext
     except TimeoutException as e:
         print(f"Произошло исключение TimeoutException: {e}")
         pass
-    except TelegramNetworkError:
-        pass
+    except TelegramNetworkError as e:
+        print(f"Произошло исключение TelegramNetworkError: {e}")
+
     except Exception:
         backoff.reset()
         await get_excel(translated_city, query)

@@ -147,16 +147,16 @@ async def run_parser(city, search_query):
         driver.quit()
 
         await get_excel(city, search_query)
-
+    except TelegramNetworkError as e:
+        print(f"Произошло исключение TimeoutException: {e}")
     except TimeoutException as e:
         print(f"Произошло исключение TimeoutException: {e}")
-        pass
 
-    except InvalidSessionIdException:
-        pass
+    except InvalidSessionIdException as e:
+        print(f"Произошло исключение InvalidSessionIdException: {e}")
 
-    except NoSuchElementException:
-        pass
+    except NoSuchElementException as e:
+        print(f"Произошло исключение NoSuchElementException: {e}")
 
     except KeyboardInterrupt:
         # logger.error(f"Error in main parsing process: {e}")
