@@ -66,8 +66,9 @@ async def show_summary(message: Message, data: Dict[str, Any], state: FSMContext
     query = data["query"]
     translated_city = translate(data["city"], "en", "ru").lower()
     try:
+        url = f"https://2gis.ru/{translated_city}/search/{query}"
         loop = asyncio.get_event_loop()
-        loop.run_until_complete(await run_parser(translated_city, query))
+        loop.run_until_complete(await run_parser(translated_city, query, url))
         await message.answer_document(
             FSInputFile(f"files/{translated_city}_{query}.xlsx"),
             caption="Запрос выполнен успешно",
@@ -75,13 +76,13 @@ async def show_summary(message: Message, data: Dict[str, Any], state: FSMContext
         os.remove(f"files/{translated_city}_{query}.xlsx")
         os.remove(f"result_output/{translated_city}_{query}.csv")
         await state.clear()
+
     except TimeoutException as e:
         print(f"Произошло исключение TimeoutException: {e}")
         pass
     except TelegramNetworkError as e:
         print(f"Произошло исключение TelegramNetworkError: {e}")
-    except InvalidSessionIdException as e:
-        print(f"Произошло исключение InvalidSessionIdException в блоке с ботом: {e}")
+
     except Exception:
         backoff.reset()
         await get_excel(translated_city, query)

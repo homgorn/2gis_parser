@@ -98,14 +98,12 @@ async def find_and_get_elements(driver, main_block, data_in_memory):
         pass
 
 
-async def run_parser(city, search_query):
+async def run_parser(city, search_query, url):
     create_dirs()
     driver = await get_driver()
 
     try:
-        url = f"https://2gis.ru/{city}/search/{search_query}"
         print(url)
-
         driver.get(url)
         await element_click(driver, xpathes.main_banner)
         await element_click(driver, xpathes.cookie_banner)
@@ -123,7 +121,6 @@ async def run_parser(city, search_query):
                     try:
                         if main_block.find_element(By.XPATH, f"div[{item}]").get_attribute("class"):
                             continue
-
                         item_clicked = await element_click(main_block, f"div[{item}]/div/div[2]")
                         if not item_clicked:
                             await make_scroll(driver, xpathes.scroll)
@@ -135,19 +132,12 @@ async def run_parser(city, search_query):
                         await find_and_get_elements(driver, main_block, data_in_memory)
                     except TelegramNetworkError:
                         continue
-                    except InvalidSessionIdException as e:
-                        print(f"Произошло исключение InvalidSessionIdException: {e}")
-                        current_page = driver.current_url
-                        driver.close()
-                        driver.quit()
-                        time.sleep(20)
-                        driver = await get_driver()
-                        driver.get(current_page)
             except TelegramNetworkError:
                 continue
             except InvalidSessionIdException as e:
                 print(f"Произошло исключение InvalidSessionIdException: {e}")
                 current_page = driver.current_url
+                print(driver.current_url)
                 driver.close()
                 driver.quit()
                 time.sleep(20)
@@ -170,11 +160,11 @@ async def run_parser(city, search_query):
     except InvalidSessionIdException as e:
         print(f"Произошло исключение InvalidSessionIdException: {e}")
         current_page = driver.current_url
+        print(driver.current_url)
         driver.close()
         driver.quit()
         time.sleep(20)
-        driver = await get_driver()
-        driver.get(current_page)
+        await run_parser(city, search_query, current_page)
 
     except NoSuchElementException as e:
         print(f"Произошло исключение NoSuchElementException: {e}")
