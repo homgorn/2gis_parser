@@ -135,9 +135,24 @@ async def run_parser(city, search_query):
                         await find_and_get_elements(driver, main_block, data_in_memory)
                     except TelegramNetworkError:
                         continue
+                    except InvalidSessionIdException as e:
+                        print(f"Произошло исключение InvalidSessionIdException: {e}")
+                        current_page = driver.current_url
+                        driver.close()
+                        driver.quit()
+                        time.sleep(20)
+                        driver = await get_driver()
+                        driver.get(current_page)
             except TelegramNetworkError:
                 continue
-
+            except InvalidSessionIdException as e:
+                print(f"Произошло исключение InvalidSessionIdException: {e}")
+                current_page = driver.current_url
+                driver.close()
+                driver.quit()
+                time.sleep(20)
+                driver = await get_driver()
+                driver.get(current_page)
             await make_scroll(driver, xpathes.scroll)
             await element_click(driver, xpathes.next_page_btn)
             save_data_to_csv(data_in_memory, city, search_query)
@@ -158,8 +173,8 @@ async def run_parser(city, search_query):
         driver.close()
         driver.quit()
         time.sleep(20)
+        driver = await get_driver()
         driver.get(current_page)
-        pass
 
     except NoSuchElementException as e:
         print(f"Произошло исключение NoSuchElementException: {e}")

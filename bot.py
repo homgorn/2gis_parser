@@ -17,7 +17,7 @@ from dotenv import load_dotenv
 from mtranslate import translate
 import logging
 
-from selenium.common import TimeoutException
+from selenium.common import TimeoutException, InvalidSessionIdException
 
 from main import run_parser
 from save_on_excel import get_excel
@@ -80,7 +80,8 @@ async def show_summary(message: Message, data: Dict[str, Any], state: FSMContext
         pass
     except TelegramNetworkError as e:
         print(f"Произошло исключение TelegramNetworkError: {e}")
-
+    except InvalidSessionIdException as e:
+        print(f"Произошло исключение InvalidSessionIdException в блоке с ботом: {e}")
     except Exception:
         backoff.reset()
         await get_excel(translated_city, query)
