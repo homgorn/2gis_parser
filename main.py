@@ -3,7 +3,6 @@ import os
 import random
 import re
 import time
-import logging  # Добавлено для использования модуля logging
 
 from aiogram import Bot
 from aiogram.exceptions import TelegramBadRequest, TelegramNetworkError
@@ -32,25 +31,21 @@ bot = Bot(token=TOKEN)
 
 if not os.path.exists("logs/"):
     os.makedirs("logs")
-# logging.basicConfig(
-#     filename="logs/your_bot.log",
-#     level=logging.ERROR,
-#     format="%(asctime)s - %(levelname)s - %(message)s",
-# )
-# logger = logging.getLogger(__name__)
 
 
 async def process_social(xpath, driver):
-    link = await get_element_href(driver, xpath)
-    decoded_link = await decode_fucking_social(link)
-    label = await get_element_label(driver, xpath)
-    label_and_link = f"{label}: {decoded_link}"
-    return label_and_link if link != "" and label != "" else ""
+    try:
+        link = await get_element_href(driver, xpath)
+        decoded_link = await decode_fucking_social(link)
+        label = await get_element_label(driver, xpath)
+        label_and_link = f"{label}: {decoded_link}"
+        return label_and_link if link != "" and label != "" else ""
+    except NoSuchElementException as e:
+        return ""
 
 
 async def find_and_get_elements(driver, main_block, data_in_memory):
     count_errors = 0
-
     title = await get_element_text(driver, xpathes.title)
     if title == "":
         count_errors += 1
@@ -59,14 +54,16 @@ async def find_and_get_elements(driver, main_block, data_in_memory):
         # print(title)
 
     time.sleep(0.2)
-    element = driver.find_element(By.CSS_SELECTOR, xpathes.phone_btn)
-    ActionChains(driver).move_to_element(element).click().perform()
-    phone_number = await get_elements_text(driver, xpathes.phone)
-    phone = phone_number if "..." not in phone_number else ""
-
+    try:
+        element = driver.find_element(By.CSS_SELECTOR, xpathes.phone_btn)
+        ActionChains(driver).move_to_element(element).click().perform()
+        phone_number = await get_elements_text(driver, xpathes.phone)
+        phone = phone_number if "..." not in phone_number else ""
+    except NoSuchElementException as e:
+        phone = ""
+        pass
     link = await get_elements_text(driver, xpathes.link)
     socials_selectors = [xpathes.social[f"social{i}"] for i in range(1, 6)]
-
     socials = []
     for xpath in socials_selectors:
         socials.append(await process_social(xpath, driver))
@@ -88,11 +85,10 @@ async def find_and_get_elements(driver, main_block, data_in_memory):
     data_in_memory.append(row_data)
 
 
-async def run_parser(city, search_query, url, page):
+async def run_parser(city, search_query, url):
     current_page = ""
     create_dirs()
     driver = await get_driver()
-    page = page
     try:
         print(url)
         driver.get(url)
@@ -104,8 +100,7 @@ async def run_parser(city, search_query, url, page):
         items_counts = 0
         data_in_memory = []
 
-        for i in range(page, pages + 1):
-            page = i
+        for i in range(1, pages):
             a = random.randint(1, 5)
             current_page = driver.current_url
             try:
@@ -113,8 +108,6 @@ async def run_parser(city, search_query, url, page):
                 count_items = len(main_block.find_elements(By.XPATH, "div"))
                 for item in range(1, count_items):
                     try:
-                        # if a == 2:
-                        #     driver.close()
                         if main_block.find_element(By.XPATH, f"div[{item}]").get_attribute("class"):
                             continue
                         item_clicked = await element_click(main_block, f"div[{item}]/div/div[2]")
@@ -152,7 +145,7 @@ async def run_parser(city, search_query, url, page):
         print(current_page)
         driver.quit()
         time.sleep(5)
-        await run_parser(city, search_query, current_page, page)
+        await run_parser(city, search_query, current_page)
 
     except KeyboardInterrupt:
         # logger.error(f"Error in main parsing process: {e}")
@@ -167,7 +160,7 @@ async def main():
     city = "samara"
     search_query = "Магазин%20техники"
     url = f"https://2gis.ru/{city}/search/{search_query}"
-    await run_parser(city, search_query, url, 1)
+    await run_parser(city, search_query, url)
 
 
 if __name__ == "__main__":
