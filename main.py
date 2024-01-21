@@ -113,8 +113,8 @@ async def run_parser(city, search_query, url, page):
                 count_items = len(main_block.find_elements(By.XPATH, "div"))
                 for item in range(1, count_items):
                     try:
-                        if a == 2:
-                            driver.close()
+                        # if a == 2:
+                        #     driver.close()
                         if main_block.find_element(By.XPATH, f"div[{item}]").get_attribute("class"):
                             continue
                         item_clicked = await element_click(main_block, f"div[{item}]/div/div[2]")
