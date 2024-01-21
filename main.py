@@ -1,5 +1,6 @@
 import asyncio
 import os
+import random
 import re
 import time
 import logging  # Добавлено для использования модуля logging
@@ -40,62 +41,51 @@ if not os.path.exists("logs/"):
 
 
 async def process_social(xpath, driver):
-    try:
-        link = await get_element_href(driver, xpath)
-        decoded_link = await decode_fucking_social(link)
-        label = await get_element_label(driver, xpath)
-        label_and_link = f"{label}: {decoded_link}"
-        return label_and_link if link != "" and label != "" else ""
-    except Exception as e:
-        pass
-        return ""
+    link = await get_element_href(driver, xpath)
+    decoded_link = await decode_fucking_social(link)
+    label = await get_element_label(driver, xpath)
+    label_and_link = f"{label}: {decoded_link}"
+    return label_and_link if link != "" and label != "" else ""
 
 
 async def find_and_get_elements(driver, main_block, data_in_memory):
     count_errors = 0
-    try:
-        title = await get_element_text(driver, xpathes.title)
-        if title == "":
-            count_errors += 1
-            if count_errors >= 10:
-                raise Exception
+
+    title = await get_element_text(driver, xpathes.title)
+    if title == "":
+        count_errors += 1
+        if count_errors >= 10:
+            raise Exception
         # print(title)
 
-        time.sleep(0.2)
-        element = driver.find_element(By.CSS_SELECTOR, xpathes.phone_btn)
-        ActionChains(driver).move_to_element(element).click().perform()
-        phone_numper = await get_elements_text(driver, xpathes.phone)
-        phone = phone_numper if "..." not in phone_numper else ""
-    except Exception:
-        phone = ""
+    time.sleep(0.2)
+    element = driver.find_element(By.CSS_SELECTOR, xpathes.phone_btn)
+    ActionChains(driver).move_to_element(element).click().perform()
+    phone_number = await get_elements_text(driver, xpathes.phone)
+    phone = phone_number if "..." not in phone_number else ""
 
-    try:
-        link = await get_elements_text(driver, xpathes.link)
-        socials_selectors = [xpathes.social[f"social{i}"] for i in range(1, 6)]
+    link = await get_elements_text(driver, xpathes.link)
+    socials_selectors = [xpathes.social[f"social{i}"] for i in range(1, 6)]
 
-        socials = []
-        for xpath in socials_selectors:
-            socials.append(await process_social(xpath, driver))
+    socials = []
+    for xpath in socials_selectors:
+        socials.append(await process_social(xpath, driver))
 
-        email = await get_element_href(driver, xpathes.email)
-        real_email = re.search(r"mailto:(.+)", email).group(1) if email != "" else ""
-        rating = await get_element_text(driver, xpathes.rating)
-        await move_to_element(driver, main_block)
+    email = await get_element_href(driver, xpathes.email)
+    real_email = re.search(r"mailto:(.+)", email).group(1) if email != "" else ""
+    rating = await get_element_text(driver, xpathes.rating)
+    await move_to_element(driver, main_block)
 
-        row_data = [
-            title,
-            link,
-            phone,
-            real_email,
-            socials,
-            rating,
-        ]
+    row_data = [
+        title,
+        link,
+        phone,
+        real_email,
+        socials,
+        rating,
+    ]
 
-        data_in_memory.append(row_data)
-    except Exception as e:
-        # logger.error(f"Error finding and getting elements: {e}")
-        print(e)
-        pass
+    data_in_memory.append(row_data)
 
 
 async def run_parser(city, search_query, url):
@@ -114,12 +104,15 @@ async def run_parser(city, search_query, url):
         data_in_memory = []
 
         for _ in range(pages):
+            a = random.randint(1, 5)
             current_page = driver.current_url
             try:
                 main_block = driver.find_element(By.XPATH, xpathes.main_block)
                 count_items = len(main_block.find_elements(By.XPATH, "div"))
                 for item in range(1, count_items):
                     try:
+                        # if a == 2:
+                        #     driver.close()
                         if main_block.find_element(By.XPATH, f"div[{item}]").get_attribute("class"):
                             continue
                         item_clicked = await element_click(main_block, f"div[{item}]/div/div[2]")
@@ -135,7 +128,9 @@ async def run_parser(city, search_query, url):
                         continue
             except TelegramNetworkError:
                 continue
-
+            except NoSuchElementException as e:
+                print(f"Произошло исключение NoSuchElementException: {e}")
+                continue
             await make_scroll(driver, xpathes.scroll)
             await element_click(driver, xpathes.next_page_btn)
             save_data_to_csv(data_in_memory, city, search_query)
@@ -154,11 +149,8 @@ async def run_parser(city, search_query, url):
         print(f"Произошло исключение InvalidSessionIdException: {e}")
         print(current_page)
         driver.quit()
-        time.sleep(20)
+        time.sleep(5)
         await run_parser(city, search_query, current_page)
-
-    except NoSuchElementException as e:
-        print(f"Произошло исключение NoSuchElementException: {e}")
 
     except KeyboardInterrupt:
         # logger.error(f"Error in main parsing process: {e}")
@@ -172,7 +164,8 @@ async def run_parser(city, search_query, url):
 async def main():
     city = "samara"
     search_query = "Магазин%20техники"
-    await run_parser(city, search_query)
+    url = f"https://2gis.ru/{city}/search/{search_query}"
+    await run_parser(city, search_query, url)
 
 
 if __name__ == "__main__":
