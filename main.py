@@ -141,13 +141,12 @@ async def run_parser(city, search_query, current_page_number, items_counts):
                 print(f"Произошло исключение InvalidSessionIdException в первом блоке: {e}")
                 driver.quit()
                 time.sleep(5)
-                await run_parser(city, search_query, current_page_number)
+                await run_parser(city, search_query, current_page_number, items_counts)
             current_page_number += 1
             await make_scroll(driver, xpathes.scroll)
             await element_click(driver, xpathes.next_page_btn)
             save_data_to_csv(data_in_memory, city, search_query)
             data_in_memory = []
-            raise InvalidSessionIdException
 
         driver.quit()
         await get_excel(city, search_query)
