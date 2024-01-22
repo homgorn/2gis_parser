@@ -76,7 +76,11 @@ async def show_summary(message: Message, data: Dict[str, Any], state: FSMContext
         os.remove(f"files/{translated_city}_{query}.xlsx")
         os.remove(f"result_output/{translated_city}_{query}.csv")
         await state.clear()
+    except TelegramNetworkError as e:
+        print(f"Произошло исключение TimeoutException в bot.py")
 
+    except TimeoutException as e:
+        print(f"Произошло исключение TimeoutException в bot.py")
     except Exception:
         backoff.reset()
         await get_excel(translated_city, query)

@@ -138,7 +138,7 @@ async def run_parser(city, search_query, current_page_number, items_counts):
                 pass
 
             except InvalidSessionIdException as e:
-                print(f"Произошло исключение InvalidSessionIdException в первом блоке: {e}")
+                print(f"Произошло исключение InvalidSessionIdException в первом блоке")
                 driver.quit()
                 time.sleep(5)
                 await run_parser(city, search_query, current_page_number, items_counts)
@@ -156,8 +156,8 @@ async def run_parser(city, search_query, current_page_number, items_counts):
 
     except TimeoutException as e:
         print(f"Произошло исключение TimeoutException: {e}")
-    except InvalidSessionIdException as e:
-        print(f"Произошло исключение InvalidSessionIdException во втором блоке: {e}")
+    except InvalidSessionIdException:
+        print(f"Произошло исключение InvalidSessionIdException во втором блоке")
         driver.quit()
         time.sleep(5)
         await run_parser(city, search_query, current_page_number, items_counts)
