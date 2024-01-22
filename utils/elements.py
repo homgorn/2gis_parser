@@ -1,6 +1,5 @@
 from selenium import webdriver
-from selenium.common.exceptions import (NoSuchElementException,
-                                        StaleElementReferenceException)
+from selenium.common.exceptions import NoSuchElementException, StaleElementReferenceException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webdriver import WebDriver
 
@@ -24,7 +23,7 @@ async def get_elements_text(driver: WebDriver, path: str) -> set:
             phone_set.add(element.text)
         return phone_set
     except NoSuchElementException:
-        return set()
+        return phone_set
 
 
 async def get_element_href(driver, path):

@@ -10,6 +10,8 @@ from dotenv import load_dotenv
 from selenium.common import InvalidSessionIdException, NoSuchElementException, TimeoutException
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.by import By
+from selenium.webdriver.support.wait import WebDriverWait
+
 from save_on_csv import create_dirs, save_data_to_csv
 from save_on_excel import get_excel
 from utils import xpathes
@@ -34,14 +36,11 @@ if not os.path.exists("logs/"):
 
 
 async def process_social(xpath, driver):
-    try:
-        link = await get_element_href(driver, xpath)
-        decoded_link = await decode_fucking_social(link)
-        label = await get_element_label(driver, xpath)
-        label_and_link = f"{label}: {decoded_link}"
-        return label_and_link if link != "" and label != "" else ""
-    except NoSuchElementException as e:
-        return ""
+    link = await get_element_href(driver, xpath)
+    decoded_link = await decode_fucking_social(link)
+    label = await get_element_label(driver, xpath)
+    label_and_link = f"{label}: {decoded_link}"
+    return label_and_link if link != "" and label != "" else ""
 
 
 async def find_and_get_elements(driver, main_block, data_in_memory):
@@ -51,7 +50,7 @@ async def find_and_get_elements(driver, main_block, data_in_memory):
         count_errors += 1
         if count_errors >= 10:
             raise Exception
-        # print(title)
+    print(title)
 
     time.sleep(0.2)
     try:
@@ -59,9 +58,10 @@ async def find_and_get_elements(driver, main_block, data_in_memory):
         ActionChains(driver).move_to_element(element).click().perform()
         phone_number = await get_elements_text(driver, xpathes.phone)
         phone = phone_number if "..." not in phone_number else ""
-    except NoSuchElementException as e:
+    except NoSuchElementException:
         phone = ""
         pass
+
     link = await get_elements_text(driver, xpathes.link)
     socials_selectors = [xpathes.social[f"social{i}"] for i in range(1, 6)]
     socials = []
@@ -85,10 +85,11 @@ async def find_and_get_elements(driver, main_block, data_in_memory):
     data_in_memory.append(row_data)
 
 
-async def run_parser(city, search_query, url):
-    current_page = ""
+async def run_parser(city, search_query, current_page_number, items_counts):
+    current_page_number = current_page_number
     create_dirs()
     driver = await get_driver()
+    url = f"https://2gis.ru/{city}/search/{search_query}/"
     try:
         print(url)
         driver.get(url)
@@ -97,16 +98,26 @@ async def run_parser(city, search_query, url):
         count_all_items = int(await get_element_text(driver, xpathes.items_count))
         print(count_all_items)
         pages = round(count_all_items / 12 + 0.5)
-        items_counts = 0
+        items_counts = items_counts
         data_in_memory = []
 
-        for i in range(1, pages):
-            a = random.randint(1, 5)
-            current_page = driver.current_url
+        if current_page_number != 1:
+            for i in range(1, current_page_number):
+                main_block = driver.find_element(By.XPATH, xpathes.main_block)
+
+                for item in range(1, 13):
+                    if main_block.find_element(By.XPATH, f"div[{item}]").get_attribute("class"):
+                        continue
+                    await make_scroll(driver, xpathes.scroll)
+                    await element_click(main_block, f"div[{item}]/div/div[2]")
+                await make_scroll(driver, xpathes.scroll)
+                await element_click(driver, xpathes.next_page_btn)
+
+        for i in range(current_page_number, pages + 1):
             try:
                 main_block = driver.find_element(By.XPATH, xpathes.main_block)
-                count_items = len(main_block.find_elements(By.XPATH, "div"))
-                for item in range(1, count_items):
+
+                for item in range(1, 13):
                     try:
                         if main_block.find_element(By.XPATH, f"div[{item}]").get_attribute("class"):
                             continue
@@ -121,11 +132,17 @@ async def run_parser(city, search_query, url):
                         await find_and_get_elements(driver, main_block, data_in_memory)
                     except TelegramNetworkError:
                         continue
-            except TelegramNetworkError:
-                continue
+
             except NoSuchElementException as e:
                 print(f"Произошло исключение NoSuchElementException: {e}")
-                continue
+                pass
+
+            except InvalidSessionIdException as e:
+                print(f"Произошло исключение InvalidSessionIdException в первом блоке: {e}")
+                driver.quit()
+                time.sleep(5)
+                await run_parser(city, search_query, current_page_number)
+            current_page_number += 1
             await make_scroll(driver, xpathes.scroll)
             await element_click(driver, xpathes.next_page_btn)
             save_data_to_csv(data_in_memory, city, search_query)
@@ -139,28 +156,23 @@ async def run_parser(city, search_query, url):
 
     except TimeoutException as e:
         print(f"Произошло исключение TimeoutException: {e}")
-
     except InvalidSessionIdException as e:
-        print(f"Произошло исключение InvalidSessionIdException: {e}")
-        print(current_page)
+        print(f"Произошло исключение InvalidSessionIdException во втором блоке: {e}")
         driver.quit()
         time.sleep(5)
-        await run_parser(city, search_query, current_page)
+        await run_parser(city, search_query, current_page_number, items_counts)
 
     except KeyboardInterrupt:
-        # logger.error(f"Error in main parsing process: {e}")
         driver.quit()
         save_data_to_csv(data_in_memory, city, search_query)
         await get_excel(city, search_query)
-    finally:
-        driver.quit()
 
 
 async def main():
     city = "samara"
     search_query = "Магазин%20техники"
-    url = f"https://2gis.ru/{city}/search/{search_query}"
-    await run_parser(city, search_query, url)
+    current_page_number = 1
+    await run_parser(city, search_query, current_page_number, 0)
 
 
 if __name__ == "__main__":

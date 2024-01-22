@@ -63,33 +63,27 @@ backoff = Backoff(config=backoff_config)
 
 async def show_summary(message: Message, data: Dict[str, Any], state: FSMContext) -> None:
     # query = "%20".join((data["query"].split(" ")))
-    query = data["query"]
-    translated_city = translate(data["city"], "en", "ru").lower()
-    # try:
-    url = f"https://2gis.ru/{translated_city}/search/{query}"
-    loop = asyncio.get_event_loop()
-    loop.run_until_complete(await run_parser(translated_city, query, url))
-    await message.answer_document(
-        FSInputFile(f"files/{translated_city}_{query}.xlsx"),
-        caption="Запрос выполнен успешно",
-    )
-    os.remove(f"files/{translated_city}_{query}.xlsx")
-    os.remove(f"result_output/{translated_city}_{query}.csv")
-    await state.clear()
+    try:
+        query = data["query"]
+        translated_city = translate(data["city"], "en", "ru").lower()
 
-    # except TimeoutException as e:
-    #     print(f"Произошло исключение TimeoutException: {e}")
-    #     pass
-    # except TelegramNetworkError as e:
-    #     print(f"Произошло исключение TelegramNetworkError: {e}")
+        loop = asyncio.get_event_loop()
+        loop.run_until_complete(await run_parser(translated_city, query, 1, 0))
+        await message.answer_document(
+            FSInputFile(f"files/{translated_city}_{query}.xlsx"),
+            caption="Запрос выполнен успешно",
+        )
+        os.remove(f"files/{translated_city}_{query}.xlsx")
+        os.remove(f"result_output/{translated_city}_{query}.csv")
+        await state.clear()
 
-    # except Exception:
-    #     backoff.reset()
-    #     await get_excel(translated_city, query)
-    #     await message.answer_document(FSInputFile(f"files/{translated_city}_{query}.xlsx"))
-    #     os.remove(f"files/{translated_city}_{query}.xlsx")
-    #     os.remove(f"result_output/{translated_city}_{query}.csv")
-    #     await state.clear()
+    except Exception:
+        backoff.reset()
+        await get_excel(translated_city, query)
+        await message.answer_document(FSInputFile(f"files/{translated_city}_{query}.xlsx"))
+        os.remove(f"files/{translated_city}_{query}.xlsx")
+        os.remove(f"result_output/{translated_city}_{query}.csv")
+        await state.clear()
 
 
 async def main():
