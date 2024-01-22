@@ -50,7 +50,7 @@ async def find_and_get_elements(driver, main_block, data_in_memory):
         count_errors += 1
         if count_errors >= 10:
             raise Exception
-    print(title)
+    # print(title)
 
     time.sleep(0.2)
     try:
@@ -147,6 +147,7 @@ async def run_parser(city, search_query, current_page_number, items_counts):
             await element_click(driver, xpathes.next_page_btn)
             save_data_to_csv(data_in_memory, city, search_query)
             data_in_memory = []
+            raise InvalidSessionIdException
 
         driver.quit()
         await get_excel(city, search_query)
