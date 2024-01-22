@@ -125,7 +125,7 @@ async def run_parser(city, search_query, current_page_number, items_counts):
                         if not item_clicked:
                             await make_scroll(driver, xpathes.scroll)
                             await element_click(main_block, f"div[{item}]/div/div[2]")
-                        if items_counts % 100 == 0:
+                        if items_counts % 50 == 0:
                             print(f"Уже спарсили {items_counts} магазинов")
                         items_counts += 1
 
