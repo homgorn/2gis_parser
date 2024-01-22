@@ -151,11 +151,13 @@ async def run_parser(city, search_query, current_page_number, items_counts):
         driver.quit()
         await get_excel(city, search_query)
 
-    except TelegramNetworkError as e:
-        print(f"Произошло исключение TimeoutException: {e}")
-
-    except TimeoutException as e:
-        print(f"Произошло исключение TimeoutException: {e}")
+    except TelegramNetworkError:
+        print(f"Произошло исключение TimeoutException")
+    except TimeoutException:
+        print(f"Произошло исключение TimeoutException")
+        driver.quit()
+        time.sleep(5)
+        await run_parser(city, search_query, current_page_number, items_counts)
     except InvalidSessionIdException:
         print(f"Произошло исключение InvalidSessionIdException во втором блоке")
         driver.quit()
