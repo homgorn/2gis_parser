@@ -139,7 +139,7 @@ async def run_parser(city, search_query, current_page_number, items_counts):
 
             except InvalidSessionIdException as e:
                 print(f"Произошло исключение InvalidSessionIdException в первом блоке")
-                driver.quit()
+                # driver.quit()
                 time.sleep(5)
                 await run_parser(city, search_query, current_page_number, items_counts)
             current_page_number += 1
@@ -148,24 +148,24 @@ async def run_parser(city, search_query, current_page_number, items_counts):
             save_data_to_csv(data_in_memory, city, search_query)
             data_in_memory = []
 
-        driver.quit()
+        # driver.quit()
         await get_excel(city, search_query)
 
     except TelegramNetworkError:
         print(f"Произошло исключение TimeoutException")
     except TimeoutException:
         print(f"Произошло исключение TimeoutException")
-        driver.quit()
+        # driver.quit()
         time.sleep(5)
         await run_parser(city, search_query, current_page_number, items_counts)
     except InvalidSessionIdException:
         print(f"Произошло исключение InvalidSessionIdException во втором блоке")
-        driver.quit()
+        # driver.quit()
         time.sleep(5)
         await run_parser(city, search_query, current_page_number, items_counts)
 
     except KeyboardInterrupt:
-        driver.quit()
+        # driver.quit()
         save_data_to_csv(data_in_memory, city, search_query)
         await get_excel(city, search_query)
 
