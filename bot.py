@@ -23,7 +23,7 @@ from main import run_parser
 from save_on_excel import get_excel
 
 DEFAULT_BACKOFF_CONFIG = BackoffConfig(min_delay=1.0, max_delay=5.0, factor=1.3, jitter=0.1)
-session = AiohttpSession()
+session = AiohttpSession(timeout=600000000000000000000000000000000)
 
 load_dotenv()
 TOKEN = os.getenv("TOKEN")
@@ -91,9 +91,15 @@ async def show_summary(message: Message, data: Dict[str, Any], state: FSMContext
 
 
 async def main():
-    dp = Dispatcher()
-    dp.include_router(form_router)
-    await dp.start_polling(bot, polling_timeout=50, backoff_config=backoff_config)
+    try:
+        dp = Dispatcher()
+        dp.include_router(form_router)
+        await dp.start_polling(bot, polling_timeout=50, backoff_config=backoff_config)
+    except TelegramNetworkError as e:
+        print(f"Произошло исключение TimeoutException в main")
+
+    except TimeoutException as e:
+        print(f"Произошло исключение TimeoutException в main")
 
 
 if __name__ == "__main__":

@@ -1,5 +1,10 @@
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
+import logging
+
+# logging.basicConfig(level=logging.ERROR)
+# logger = logging.getLogger("selenium.webdriver.remote.remote_connection")
+# logger.setLevel(logging.DEBUG)
 
 
 async def get_driver():
@@ -19,6 +24,8 @@ async def get_driver():
     options.add_argument("--disable-browser-side-navigation")
     options.add_argument("enable-features=NetworkServiceInProcess")
     options.add_argument("disable-features=NetworkService")
+    options.add_argument("--verbose")
+    options.add_argument("--enable-logging")
 
     options.add_experimental_option(
         "prefs",
@@ -26,6 +33,7 @@ async def get_driver():
             "profile.managed_default_content_settings.images": 2,
         },
     )
+
     driver = webdriver.Chrome(options=options)
     driver.set_page_load_timeout(600)
     return driver
