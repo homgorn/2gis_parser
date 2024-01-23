@@ -94,7 +94,7 @@ async def main():
     try:
         dp = Dispatcher()
         dp.include_router(form_router)
-        await dp.start_polling(bot, polling_timeout=50, backoff_config=backoff_config)
+        await dp.start_polling(bot, polling_timeout=500000000000000, backoff_config=backoff_config)
     except TelegramNetworkError as e:
         print(f"Произошло исключение TimeoutException в main")
 

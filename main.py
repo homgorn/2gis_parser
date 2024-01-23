@@ -7,7 +7,12 @@ import time
 from aiogram import Bot
 from aiogram.exceptions import TelegramBadRequest, TelegramNetworkError
 from dotenv import load_dotenv
-from selenium.common import InvalidSessionIdException, NoSuchElementException, TimeoutException
+from selenium.common import (
+    InvalidSessionIdException,
+    NoSuchElementException,
+    TimeoutException,
+    WebDriverException,
+)
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait
@@ -163,7 +168,11 @@ async def run_parser(city, search_query, current_page_number, items_counts):
         # driver.quit()
         time.sleep(5)
         await run_parser(city, search_query, current_page_number, items_counts)
-
+    except WebDriverException:
+        print(f"Произошло исключение WebDriverException во втором блоке")
+        # driver.quit()
+        time.sleep(5)
+        await run_parser(city, search_query, current_page_number, items_counts)
     except KeyboardInterrupt:
         # driver.quit()
         save_data_to_csv(data_in_memory, city, search_query)
