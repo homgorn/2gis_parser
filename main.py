@@ -166,13 +166,13 @@ async def run_parser(city, search_query, current_page_number, items_counts):
     except InvalidSessionIdException:
         print(f"Произошло исключение InvalidSessionIdException во втором блоке")
         driver.quit()
-        time.sleep(5)
+        time.sleep(15)
         await run_parser(city, search_query, current_page_number, items_counts)
-    # except WebDriverException:
-    #     print(f"Произошло исключение WebDriverException во втором блоке")
-    #     driver.quit()
-    #     time.sleep(5)
-    #     await run_parser(city, search_query, current_page_number, items_counts)
+    except WebDriverException:
+        print(f"Произошло исключение WebDriverException во втором блоке")
+        driver.quit()
+        time.sleep(15)
+        await run_parser(city, search_query, current_page_number, items_counts)
     except KeyboardInterrupt:
         driver.quit()
         save_data_to_csv(data_in_memory, city, search_query)
