@@ -109,7 +109,7 @@ async def run_parser(city, search_query, current_page_number, items_counts):
         if current_page_number != 1:
             for i in range(1, current_page_number):
                 main_block = driver.find_element(By.XPATH, xpathes.main_block)
-
+                await asyncio.sleep(0.1)
                 for item in range(1, 13):
                     if main_block.find_element(By.XPATH, f"div[{item}]").get_attribute("class"):
                         continue
@@ -117,6 +117,7 @@ async def run_parser(city, search_query, current_page_number, items_counts):
                     await element_click(main_block, f"div[{item}]/div/div[2]")
                 await make_scroll(driver, xpathes.scroll)
                 await element_click(driver, xpathes.next_page_btn)
+                await asyncio.sleep(0.1)
 
         for i in range(current_page_number, pages + 1):
             try:
@@ -166,12 +167,12 @@ async def run_parser(city, search_query, current_page_number, items_counts):
     except InvalidSessionIdException:
         print(f"Произошло исключение InvalidSessionIdException во втором блоке")
         driver.quit()
-        time.sleep(15)
+        await asyncio.sleep(0.1)
         await run_parser(city, search_query, current_page_number, items_counts)
     except WebDriverException:
         print(f"Произошло исключение WebDriverException во втором блоке")
         driver.quit()
-        time.sleep(15)
+        await asyncio.sleep(0.1)
         await run_parser(city, search_query, current_page_number, items_counts)
     except KeyboardInterrupt:
         driver.quit()

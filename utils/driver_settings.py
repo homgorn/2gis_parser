@@ -18,7 +18,7 @@ async def get_driver():
     options.add_argument("--disable-application-cache")
     options.add_argument("--disable-animations")
     options.add_argument("--process-per-site=1")
-    # options.add_argument("--disable-gpu-process-for-dx12-vulkan-info-collection")
+    options.add_argument("--disable-gpu-process-for-dx12-vulkan-info-collection")
     options.add_argument("--disable-session-crashed-bubble")
     # options.add_argument("--disable-session-restore")
     options.add_argument("--disable-browser-side-navigation")
