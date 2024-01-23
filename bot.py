@@ -81,13 +81,13 @@ async def show_summary(message: Message, data: Dict[str, Any], state: FSMContext
 
     except TimeoutException as e:
         print(f"Произошло исключение TimeoutException в bot.py")
-    except Exception:
-        backoff.reset()
-        await get_excel(translated_city, query)
-        await message.answer_document(FSInputFile(f"files/{translated_city}_{query}.xlsx"))
-        os.remove(f"files/{translated_city}_{query}.xlsx")
-        os.remove(f"result_output/{translated_city}_{query}.csv")
-        await state.clear()
+    # except Exception:
+    #     backoff.reset()
+    #     await get_excel(translated_city, query)
+    #     await message.answer_document(FSInputFile(f"files/{translated_city}_{query}.xlsx"))
+    #     os.remove(f"files/{translated_city}_{query}.xlsx")
+    #     os.remove(f"result_output/{translated_city}_{query}.csv")
+    #     await state.clear()
 
 
 async def main():
