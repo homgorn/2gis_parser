@@ -76,10 +76,10 @@ async def show_summary(message: Message, data: Dict[str, Any], state: FSMContext
         os.remove(f"files/{translated_city}_{query}.xlsx")
         os.remove(f"result_output/{translated_city}_{query}.csv")
         await state.clear()
-    except TelegramNetworkError as e:
+    except TelegramNetworkError:
         print(f"Произошло исключение TimeoutException в bot.py")
 
-    except TimeoutException as e:
+    except TimeoutException:
         print(f"Произошло исключение TimeoutException в bot.py")
     # except Exception:
     #     backoff.reset()
@@ -95,13 +95,19 @@ async def main():
         dp = Dispatcher()
         dp.include_router(form_router)
         await dp.start_polling(bot, polling_timeout=500000000000000, backoff_config=backoff_config)
+    except TelegramNetworkError:
+        print(f"Произошло исключение TimeoutException в main")
+
+    except TimeoutException:
+        print(f"Произошло исключение TimeoutException в main")
+
+
+if __name__ == "__main__":
+    try:
+        logging.basicConfig(level=logging.INFO, stream=sys.stdout)
+        asyncio.run(main())
     except TelegramNetworkError as e:
         print(f"Произошло исключение TimeoutException в main")
 
     except TimeoutException as e:
         print(f"Произошло исключение TimeoutException в main")
-
-
-if __name__ == "__main__":
-    logging.basicConfig(level=logging.INFO, stream=sys.stdout)
-    asyncio.run(main())
